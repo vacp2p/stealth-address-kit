@@ -740,9 +740,11 @@ dependencies = [
  "ark-ec",
  "ark-ff",
  "ark-std",
+ "color-eyre",
  "num-bigint",
  "num-traits",
  "rln",
+ "serde_json",
 ]
 
 [[package]]
