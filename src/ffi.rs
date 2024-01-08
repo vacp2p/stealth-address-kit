@@ -1,26 +1,56 @@
 use std::ops::Add;
-use std::str::FromStr;
 use crate::stealth_commitments::{derive_public_key, generate_random_fr, generate_stealth_commitment, generate_stealth_private_key, random_keypair};
-use ark_bn254::{Fq, Fr, G1Projective, G1Affine};
-use ark_ff::{BigInt, BigInteger, Field, PrimeField, ToConstraintField};
+use ark_bn254::{Fr, G1Projective};
 use num_traits::{Zero};
-use ark_serialize::{CanonicalDeserialize, CanonicalSerialize};
+use ark_serialize::{CanonicalDeserialize, CanonicalSerialize, SerializationError};
+use crate::ffi::CErrorCode::{NoError, SerializationErrorInvalidData, SerializationErrorIoError, SerializationErrorNotEnoughSpace, SerializationErrorUnexpectedFlags};
 
 #[repr(C)]
 #[derive(Debug)]
 pub struct CFr([u8; 32]);
 
+#[repr(C)]
+#[derive(Debug, PartialOrd, PartialEq)]
+pub enum CErrorCode {
+    NoError = 0,
+    SerializationErrorNotEnoughSpace = 1,
+    SerializationErrorInvalidData = 2,
+    SerializationErrorUnexpectedFlags = 3,
+    SerializationErrorIoError = 4,
+    InvalidKeys = 5
+}
+
+impl From<SerializationError> for CErrorCode {
+    fn from(value: SerializationError) -> Self {
+        match value {
+            SerializationError::NotEnoughSpace => SerializationErrorNotEnoughSpace,
+            SerializationError::InvalidData => SerializationErrorInvalidData,
+            SerializationError::UnexpectedFlags => SerializationErrorUnexpectedFlags,
+            SerializationError::IoError(_) => SerializationErrorIoError
+        }
+    }
+}
+
+#[repr(C)]
+#[derive(Debug)]
+pub struct CReturn<T> {
+    value: T,
+    err_code: CErrorCode
+}
+
 impl Add for CFr {
     type Output = Self;
 
     fn add(self, rhs: Self) -> Self::Output {
-        CFr::from(Fr::from(self).add(Fr::from(rhs)))
+        let lhs = Fr::try_from(self).unwrap();
+        let rhs = Fr::try_from(rhs).unwrap();
+        CFr::try_from(lhs.add(rhs)).unwrap()
     }
 }
 
 impl Zero for CFr {
     fn zero() -> Self {
-        CFr::from(Fr::from(0))
+        CFr::try_from(Fr::try_from(0).unwrap()).unwrap()
     }
 
     fn is_zero(&self) -> bool {
@@ -28,19 +58,23 @@ impl Zero for CFr {
     }
 }
 
-impl From<Fr> for CFr {
-    fn from(value: Fr) -> Self {
+impl TryFrom<Fr> for CFr {
+    type Error = SerializationError;
+
+    fn try_from(value: Fr) -> Result<Self, Self::Error> {
         let mut buf = Vec::new();
-        value.serialize_compressed(&mut buf).unwrap();
+        value.serialize_compressed(&mut buf)?;
         let mut res = [0u8; 32];
         res.copy_from_slice(&buf);
-        CFr(res)
+        Ok(CFr(res))
     }
 }
 
-impl From<CFr> for Fr {
-    fn from(value: CFr) -> Self {
-        Fr::deserialize_compressed(value.0.as_slice()).unwrap()
+impl TryFrom<CFr> for Fr {
+    type Error = SerializationError;
+
+    fn try_from(value: CFr) -> Result<Self, Self::Error> {
+        Fr::deserialize_compressed(value.0.as_slice())
     }
 }
 
@@ -54,18 +88,48 @@ impl From<&CFr> for Fr {
 #[derive(Debug, PartialOrd, PartialEq)]
 pub struct CG1Projective([u8; 32]);
 
-impl From<G1Projective> for CG1Projective {
-    fn from(value: G1Projective) -> Self {
-        let mut buf = Vec::new();
-        value.serialize_compressed(&mut buf).unwrap();
-        let mut result = [0u8; 32];
-        result.copy_from_slice(&buf);
-        CG1Projective(result)
+impl Add for CG1Projective {
+    type Output = Self;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        let lhs = G1Projective::try_from(self).unwrap();
+        let rhs = G1Projective::try_from(rhs).unwrap();
+        CG1Projective::try_from(lhs.add(rhs)).unwrap()
     }
 }
-impl From<CG1Projective> for G1Projective {
-    fn from(value: CG1Projective) -> Self {
-        G1Projective::deserialize_compressed(value.0.as_slice()).expect("TODO: panic message")
+
+impl Zero for CG1Projective {
+    fn zero() -> Self {
+        CG1Projective::try_from(G1Projective::zero()).unwrap()
+    }
+
+    fn is_zero(&self) -> bool {
+        G1Projective::is_zero(&G1Projective::from(self))
+    }
+}
+
+impl TryFrom<G1Projective> for CG1Projective {
+    type Error = SerializationError;
+
+    fn try_from(value: G1Projective) -> Result<Self, Self::Error> {
+        let mut buf = Vec::new();
+        value.serialize_compressed(&mut buf)?;
+        let mut result = [0u8; 32];
+        result.copy_from_slice(&buf);
+        Ok(CG1Projective(result))
+    }
+}
+impl TryFrom<CG1Projective> for G1Projective {
+    type Error = SerializationError;
+
+    fn try_from(value: CG1Projective) -> Result<Self, Self::Error> {
+        G1Projective::deserialize_compressed(value.0.as_slice())
+    }
+}
+
+impl From<&CG1Projective> for G1Projective {
+    fn from(value: &CG1Projective) -> Self {
+        G1Projective::deserialize_compressed(value.0.as_slice()).unwrap()
     }
 }
 
@@ -76,6 +140,14 @@ pub struct CKeyPair {
     public_key: CG1Projective
 }
 
+impl CKeyPair {
+    pub fn zero() -> Self {
+        CKeyPair {
+            private_key: CFr::zero(),
+            public_key: CG1Projective::zero()
+        }
+    }
+}
 #[repr(C)]
 #[derive(Debug)]
 pub struct CStealthCommitment {
@@ -83,57 +155,123 @@ pub struct CStealthCommitment {
     view_tag: u64
 }
 
-impl From<(G1Projective, u64)> for CStealthCommitment {
-    fn from(value: (G1Projective, u64)) -> Self {
+impl CStealthCommitment {
+    pub fn zero() -> Self {
         CStealthCommitment {
-            stealth_commitment: CG1Projective::from(value.0),
-            view_tag: value.1
+            stealth_commitment: CG1Projective::zero(),
+            view_tag: 0,
         }
     }
 }
 
-impl Into<(G1Projective, u64)> for CStealthCommitment {
-    fn into(self) -> (G1Projective, u64) {
-        (self.stealth_commitment.into(), self.view_tag)
+impl TryFrom<(G1Projective, u64)> for CStealthCommitment {
+    type Error = SerializationError;
+
+    fn try_from(value: (G1Projective, u64)) -> Result<Self, Self::Error> {
+        Ok(CStealthCommitment {
+            stealth_commitment: CG1Projective::try_from(value.0)?,
+            view_tag: value.1
+        })
+    }
+}
+
+impl TryInto<(G1Projective, u64)> for CStealthCommitment {
+    type Error = SerializationError;
+    fn try_into(self) -> Result<(G1Projective, u64), Self::Error> {
+        Ok((self.stealth_commitment.try_into()?, self.view_tag))
     }
 }
 
 #[no_mangle]
-pub extern "C" fn ffi_generate_random_fr() -> CFr {
-    CFr::from(generate_random_fr())
+pub extern "C" fn ffi_generate_random_fr() -> CReturn<CFr> {
+    match CFr::try_from(generate_random_fr()) {
+        Ok(v) => CReturn {value: v, err_code: NoError },
+        Err(err) => CReturn { value: CFr::zero(), err_code: err.into() }
+    }
 }
 
 #[no_mangle]
-pub extern "C" fn ffi_derive_public_key(private_key: CFr) -> CG1Projective {
-    CG1Projective::from(derive_public_key(private_key.into()))
+pub extern "C" fn ffi_derive_public_key(private_key: CFr) -> CReturn<CG1Projective> {
+    let private_key: Fr = match private_key.try_into() {
+        Ok(v) => v,
+        Err(err) => return CReturn { value: CG1Projective::zero(), err_code: err.into() }
+    };
+
+    match CG1Projective::try_from(derive_public_key(private_key)) {
+        Ok(v) => CReturn { value: v, err_code: NoError },
+        Err(err) => CReturn { value: CG1Projective::zero(), err_code: err.into() }
+    }
 }
 
 
-pub extern "C" fn ffi_random_keypair() -> CKeyPair {
+pub extern "C" fn ffi_random_keypair() -> CReturn<CKeyPair> {
     let (private_key, public_key) = random_keypair();
-    CKeyPair {
-        private_key: CFr::from(private_key),
-        public_key: CG1Projective::from(public_key)
+    let private_key = match CFr::try_from(private_key) {
+        Ok(v) => v,
+        Err(err) => return CReturn {value: CKeyPair::zero(), err_code: err.into()}
+    };
+    let public_key = match CG1Projective::try_from(public_key) {
+        Ok(v) => v,
+        Err(err) => return CReturn { value: CKeyPair::zero(), err_code: err.into()}
+    };
+    CReturn {
+        value: CKeyPair
+        {
+            private_key,
+            public_key
+        },
+        err_code: NoError
     }
 }
 
-pub extern "C" fn ffi_generate_stealth_commitment(viewing_public_key: CG1Projective, spending_public_key: CG1Projective, ephemeral_private_key: CFr) -> CStealthCommitment {
-    CStealthCommitment::from(generate_stealth_commitment(viewing_public_key.into(), spending_public_key.into(), ephemeral_private_key.into()))
+pub extern "C" fn ffi_generate_stealth_commitment(viewing_public_key: CG1Projective, spending_public_key: CG1Projective, ephemeral_private_key: CFr) -> CReturn<CStealthCommitment> {
+    let viewing_public_key: G1Projective = match viewing_public_key.try_into() {
+        Ok(v) => v,
+        Err(err) => return CReturn {value: CStealthCommitment::zero(), err_code: err.into() }
+    };
+    let spending_public_key: G1Projective = match spending_public_key.try_into() {
+        Ok(v) => v,
+        Err(err) => return CReturn {value: CStealthCommitment::zero(), err_code: err.into()}
+    };
+    let ephemeral_private_key: Fr = match ephemeral_private_key.try_into() {
+        Ok(v) => v,
+        Err(err) => return CReturn {value: CStealthCommitment::zero(), err_code: err.into()}
+    };
+    match CStealthCommitment::try_from(generate_stealth_commitment(viewing_public_key, spending_public_key, ephemeral_private_key)) {
+        Ok(v) => CReturn {value: v, err_code: NoError},
+        Err(err) => CReturn {value: CStealthCommitment::zero(), err_code: err.into()}
+    }
 }
 
-pub extern "C" fn ffi_generate_stealth_private_key(ephemeral_public_key: CG1Projective, spending_key: CFr, viewing_key: CFr, view_tag: u64) -> CFr {
-    match generate_stealth_private_key(ephemeral_public_key.into(), spending_key.into(), viewing_key.into(), view_tag) {
-        Some(v) => CFr::from(v),
-        None => CFr::zero()
+extern "C" fn ffi_generate_stealth_private_key(ephemeral_public_key: CG1Projective, spending_key: CFr, viewing_key: CFr, view_tag: u64) -> CReturn<CFr> {
+    let ephemeral_public_key: G1Projective = match ephemeral_public_key.try_into() {
+        Ok(v) => v,
+        Err(err) => return CReturn {value: CFr::zero(), err_code: err.into()}
+    };
+    let spending_key: Fr = match spending_key.try_into() {
+        Ok(v) => v,
+        Err(err) => return CReturn {value: CFr::zero(), err_code: err.into()}
+    };
+    let viewing_key: Fr = match viewing_key.try_into() {
+        Ok(v) => v,
+        Err(err) => return CReturn {value: CFr::zero(), err_code: err.into()}
+    };
+    let stealth_private_key_opt = generate_stealth_private_key(ephemeral_public_key, spending_key, viewing_key, view_tag);
+    if stealth_private_key_opt.is_none() {
+        return CReturn {value: CFr::zero(), err_code: CErrorCode::InvalidKeys};
+    }
+    match CFr::try_from(stealth_private_key_opt.unwrap()) {
+        Ok(v) => CReturn {value: v, err_code: NoError},
+        Err(err) => CReturn {value: CFr::zero(), err_code: err.into()}
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use ark_ff::ToConstraintField;
+    
     use super::*;
     use crate::stealth_commitments::{derive_public_key};
-    use ark_ec::{AffineRepr, CurveGroup};
+    use ark_ec::{CurveGroup};
 
 
     #[test]
@@ -144,8 +282,8 @@ mod tests {
     #[test]
     fn test_ffi_random_keypair() {
         let keypair = ffi_random_keypair();
-        let private_key = Fr::from(keypair.private_key);
-        let public_key = G1Projective::from(keypair.public_key);
+        let private_key = Fr::try_from(keypair.value.private_key).unwrap();
+        let public_key = G1Projective::try_from(keypair.value.public_key).unwrap();
         assert!(public_key.into_affine().is_on_curve());
         // Check the derived key matches the one generated from original key
         assert_eq!(derive_public_key(private_key), public_key);
@@ -160,19 +298,19 @@ mod tests {
         let ephemeral_key = ffi_random_keypair();
 
         let stealth_commitment_payload = ffi_generate_stealth_commitment(
-            viewing_key.public_key,
-            spending_key.public_key,
-            ephemeral_key.private_key,
+            viewing_key.value.public_key,
+            spending_key.value.public_key,
+            ephemeral_key.value.private_key,
         );
 
         let stealth_private_key =
-            ffi_generate_stealth_private_key(ephemeral_key.public_key, viewing_key.private_key, spending_key.private_key, stealth_commitment_payload.view_tag);
+            ffi_generate_stealth_private_key(ephemeral_key.value.public_key, viewing_key.value.private_key, spending_key.value.private_key, stealth_commitment_payload.value.view_tag);
 
-        if stealth_private_key.is_zero() {
+        if stealth_private_key.err_code != NoError {
             panic!("View tags did not match");
         }
 
-        let derived_commitment = ffi_derive_public_key(stealth_private_key);
-        assert_eq!(derived_commitment, stealth_commitment_payload.stealth_commitment);
+        let derived_commitment = ffi_derive_public_key(stealth_private_key.value);
+        assert_eq!(derived_commitment.value, stealth_commitment_payload.value.stealth_commitment);
     }
 }
