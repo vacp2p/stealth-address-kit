@@ -3,8 +3,9 @@ use crate::stealth_commitments::{derive_public_key, generate_random_fr, generate
 use ark_bn254::{Fr, G1Projective};
 use num_traits::{Zero};
 use ark_serialize::{CanonicalDeserialize, CanonicalSerialize, SerializationError};
+use rln::ffi::*;
 use crate::ffi::CErrorCode::{NoError, SerializationErrorInvalidData, SerializationErrorIoError, SerializationErrorNotEnoughSpace, SerializationErrorUnexpectedFlags};
-
+use libc::c_char;
 #[repr(C)]
 #[derive(Debug)]
 pub struct CFr([u8; 32]);
@@ -183,86 +184,194 @@ impl TryInto<(G1Projective, u64)> for CStealthCommitment {
 }
 
 #[no_mangle]
-pub extern "C" fn ffi_generate_random_fr() -> CReturn<CFr> {
-    match CFr::try_from(generate_random_fr()) {
+pub extern "C" fn ffi_generate_random_fr() -> *mut CReturn<CFr> {
+    let res = match CFr::try_from(generate_random_fr())  {
         Ok(v) => CReturn {value: v, err_code: NoError },
         Err(err) => CReturn { value: CFr::zero(), err_code: err.into() }
+    };
+    Box::into_raw(Box::new(res))
+}
+
+#[no_mangle]
+pub extern "C" fn drop_ffi_generate_random_fr(ptr: *mut CReturn<CFr>) {
+    if ptr.is_null() {
+        return;
+    }
+    unsafe {
+        let _ = Box::from_raw(ptr);
     }
 }
 
 #[no_mangle]
-pub extern "C" fn ffi_derive_public_key(private_key: CFr) -> CReturn<CG1Projective> {
+pub extern "C" fn ffi_derive_public_key(private_key: *mut CFr) -> *mut CReturn<CG1Projective> {
+    let private_key = unsafe {
+        if private_key.is_null() {
+            return Box::into_raw(Box::new(CReturn { value: CG1Projective::zero(), err_code: CErrorCode::InvalidKeys }));
+        }
+        &*private_key
+    };
     let private_key: Fr = match private_key.try_into() {
         Ok(v) => v,
-        Err(err) => return CReturn { value: CG1Projective::zero(), err_code: err.into() }
+        Err(_) => return Box::into_raw(Box::new(CReturn { value: CG1Projective::zero(), err_code: CErrorCode::InvalidKeys }))
     };
 
-    match CG1Projective::try_from(derive_public_key(private_key)) {
+    let res = match CG1Projective::try_from(derive_public_key(private_key)) {
         Ok(v) => CReturn { value: v, err_code: NoError },
         Err(err) => CReturn { value: CG1Projective::zero(), err_code: err.into() }
+    };
+    Box::into_raw(Box::new(res))
+}
+
+#[no_mangle]
+pub extern "C" fn drop_ffi_derive_public_key(ptr: *mut CReturn<CG1Projective>) {
+    if ptr.is_null() {
+        return;
+    }
+    unsafe {
+        let _ = Box::from_raw(ptr);
     }
 }
 
-
-pub extern "C" fn ffi_random_keypair() -> CReturn<CKeyPair> {
+#[no_mangle]
+pub extern "C" fn ffi_random_keypair() -> *mut CReturn<CKeyPair> {
     let (private_key, public_key) = random_keypair();
     let private_key = match CFr::try_from(private_key) {
         Ok(v) => v,
-        Err(err) => return CReturn {value: CKeyPair::zero(), err_code: err.into()}
+        Err(err) => return Box::into_raw(Box::new(CReturn {value: CKeyPair::zero(), err_code: err.into()}))
     };
     let public_key = match CG1Projective::try_from(public_key) {
         Ok(v) => v,
-        Err(err) => return CReturn { value: CKeyPair::zero(), err_code: err.into()}
+        Err(err) => return Box::into_raw(Box::new(CReturn { value: CKeyPair::zero(), err_code: err.into()}))
     };
-    CReturn {
+    let res = CReturn {
         value: CKeyPair
         {
             private_key,
             public_key
         },
         err_code: NoError
+    };
+    Box::into_raw(Box::new(res))
+}
+
+#[no_mangle]
+pub extern "C" fn drop_ffi_random_keypair(ptr: *mut CReturn<CKeyPair>) {
+    if ptr.is_null() {
+        return;
+    }
+    unsafe {
+        let _ = Box::from_raw(ptr);
     }
 }
 
-pub extern "C" fn ffi_generate_stealth_commitment(viewing_public_key: CG1Projective, spending_public_key: CG1Projective, ephemeral_private_key: CFr) -> CReturn<CStealthCommitment> {
+#[no_mangle]
+pub extern "C" fn ffi_generate_stealth_commitment(viewing_public_key: *mut CG1Projective, spending_public_key: *mut CG1Projective, ephemeral_private_key: *mut CFr) -> *mut CReturn<CStealthCommitment> {
+    let viewing_public_key = unsafe {
+        if viewing_public_key.is_null() {
+            return Box::into_raw(Box::new(CReturn {value: CStealthCommitment::zero(), err_code: CErrorCode::InvalidKeys}));
+        }
+        &*viewing_public_key
+    };
+    let spending_public_key = unsafe {
+        if spending_public_key.is_null() {
+            return Box::into_raw(Box::new(CReturn {value: CStealthCommitment::zero(), err_code: CErrorCode::InvalidKeys}));
+        }
+        &*spending_public_key
+    };
+    let ephemeral_private_key = unsafe {
+        if ephemeral_private_key.is_null() {
+            return Box::into_raw(Box::new(CReturn {value: CStealthCommitment::zero(), err_code: CErrorCode::InvalidKeys}));
+        }
+        &*ephemeral_private_key
+    };
+
     let viewing_public_key: G1Projective = match viewing_public_key.try_into() {
         Ok(v) => v,
-        Err(err) => return CReturn {value: CStealthCommitment::zero(), err_code: err.into() }
+        Err(_) => return Box::into_raw(Box::new(CReturn {value: CStealthCommitment::zero(), err_code: CErrorCode::InvalidKeys }))
     };
     let spending_public_key: G1Projective = match spending_public_key.try_into() {
         Ok(v) => v,
-        Err(err) => return CReturn {value: CStealthCommitment::zero(), err_code: err.into()}
+        Err(_) => return Box::into_raw(Box::new(CReturn {value: CStealthCommitment::zero(), err_code: CErrorCode::InvalidKeys}))
     };
     let ephemeral_private_key: Fr = match ephemeral_private_key.try_into() {
         Ok(v) => v,
-        Err(err) => return CReturn {value: CStealthCommitment::zero(), err_code: err.into()}
+        Err(_) => return Box::into_raw(Box::new(CReturn {value: CStealthCommitment::zero(), err_code: CErrorCode::InvalidKeys}))
     };
-    match CStealthCommitment::try_from(generate_stealth_commitment(viewing_public_key, spending_public_key, ephemeral_private_key)) {
+    let res = match CStealthCommitment::try_from(generate_stealth_commitment(viewing_public_key, spending_public_key, ephemeral_private_key)) {
         Ok(v) => CReturn {value: v, err_code: NoError},
-        Err(err) => CReturn {value: CStealthCommitment::zero(), err_code: err.into()}
+        Err(err) => return Box::into_raw(Box::new(CReturn {value: CStealthCommitment::zero(), err_code: err.into()}))
+    };
+    Box::into_raw(Box::new(res))
+}
+
+#[no_mangle]
+pub extern "C" fn drop_ffi_generate_stealth_commitment(ptr: *mut CReturn<CStealthCommitment>) {
+    if ptr.is_null() {
+        return;
+    }
+    unsafe {
+        let _ = Box::from_raw(ptr);
     }
 }
 
-extern "C" fn ffi_generate_stealth_private_key(ephemeral_public_key: CG1Projective, spending_key: CFr, viewing_key: CFr, view_tag: u64) -> CReturn<CFr> {
+#[no_mangle]
+pub extern "C" fn ffi_generate_stealth_private_key(ephemeral_public_key: *mut CG1Projective, spending_key: *mut CFr, viewing_key: *mut CFr, view_tag: *mut u64) -> *mut CReturn<CFr> {
+    let ephemeral_public_key = unsafe {
+        if ephemeral_public_key.is_null() {
+            return Box::into_raw(Box::new(CReturn {value: CFr::zero(), err_code: CErrorCode::InvalidKeys}));
+        }
+        &*ephemeral_public_key
+    };
+    let spending_key = unsafe {
+        if spending_key.is_null() {
+            return Box::into_raw(Box::new(CReturn {value: CFr::zero(), err_code: CErrorCode::InvalidKeys}));
+        }
+        &*spending_key
+    };
+    let viewing_key = unsafe {
+        if viewing_key.is_null() {
+            return Box::into_raw(Box::new(CReturn {value: CFr::zero(), err_code: CErrorCode::InvalidKeys}));
+        }
+        &*viewing_key
+    };
+    let view_tag = unsafe {
+        if view_tag.is_null() {
+            return Box::into_raw(Box::new(CReturn {value: CFr::zero(), err_code: CErrorCode::InvalidKeys}));
+        }
+        &*view_tag
+    };
+    
+    
     let ephemeral_public_key: G1Projective = match ephemeral_public_key.try_into() {
         Ok(v) => v,
-        Err(err) => return CReturn {value: CFr::zero(), err_code: err.into()}
+        Err(_) => return Box::into_raw(Box::new(CReturn {value: CFr::zero(), err_code: CErrorCode::InvalidKeys}))
     };
     let spending_key: Fr = match spending_key.try_into() {
         Ok(v) => v,
-        Err(err) => return CReturn {value: CFr::zero(), err_code: err.into()}
+        Err(_) => return Box::into_raw(Box::new(CReturn {value: CFr::zero(), err_code: CErrorCode::InvalidKeys}))
     };
     let viewing_key: Fr = match viewing_key.try_into() {
         Ok(v) => v,
-        Err(err) => return CReturn {value: CFr::zero(), err_code: err.into()}
+        Err(_) => return Box::into_raw(Box::new(CReturn {value: CFr::zero(), err_code: CErrorCode::InvalidKeys}))
     };
-    let stealth_private_key_opt = generate_stealth_private_key(ephemeral_public_key, spending_key, viewing_key, view_tag);
+    let stealth_private_key_opt = generate_stealth_private_key(ephemeral_public_key, spending_key, viewing_key, *view_tag);
     if stealth_private_key_opt.is_none() {
-        return CReturn {value: CFr::zero(), err_code: CErrorCode::InvalidKeys};
+        return Box::into_raw(Box::new(CReturn {value: CFr::zero(), err_code: CErrorCode::InvalidKeys}));
     }
-    match CFr::try_from(stealth_private_key_opt.unwrap()) {
+    let res = match CFr::try_from(stealth_private_key_opt.unwrap()) {
         Ok(v) => CReturn {value: v, err_code: NoError},
         Err(err) => CReturn {value: CFr::zero(), err_code: err.into()}
+    };
+    Box::into_raw(Box::new(res))
+}
+
+#[no_mangle]
+pub extern "C" fn drop_ffi_generate_stealth_private_key(ptr: *mut CReturn<CFr>) {
+    if ptr.is_null() {
+        return;
+    }
+    unsafe {
+        let _ = Box::from_raw(ptr);
     }
 }
 
@@ -273,7 +382,6 @@ mod tests {
     use crate::stealth_commitments::{derive_public_key};
     use ark_ec::{CurveGroup};
 
-
     #[test]
     fn test_ffi_generate_random_fr() {
         let _ = ffi_generate_random_fr();
@@ -282,8 +390,8 @@ mod tests {
     #[test]
     fn test_ffi_random_keypair() {
         let keypair = ffi_random_keypair();
-        let private_key = Fr::try_from(keypair.value.private_key).unwrap();
-        let public_key = G1Projective::try_from(keypair.value.public_key).unwrap();
+        let private_key = Fr::try_from((*keypair).value.private_key).unwrap();
+        let public_key = G1Projective::try_from((*keypair).value.public_key).unwrap();
         assert!(public_key.into_affine().is_on_curve());
         // Check the derived key matches the one generated from original key
         assert_eq!(derive_public_key(private_key), public_key);
