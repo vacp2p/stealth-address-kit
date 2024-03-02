@@ -1,4 +1,4 @@
 deps:
-	cargo install cross --git https://github.com/cross-rs/cross.git --rev c87a52a
+	cargo install cross --git https://github.com/cross-rs/cross.git --rev 1511a28
 clean:
 	cargo clean
