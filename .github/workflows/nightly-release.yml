@@ -95,7 +95,7 @@ jobs:
           delete_release: true
           tag_name: nightly
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PERSONAL_TOKEN }}
 
       - name: Create prerelease
         run: |
@@ -107,7 +107,7 @@ jobs:
             --notes-start-tag $start_tag \
             *-archive/*.tar.gz \
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PERSONAL_TOKEN }}
 
       - name: Delete artifacts
         uses: geekyeggo/delete-artifact@v1
