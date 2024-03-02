@@ -3,9 +3,11 @@ use crate::stealth_commitments::{derive_public_key, generate_random_fr, generate
 use ark_bn254::{Fr, G1Projective};
 use num_traits::{Zero};
 use ark_serialize::{CanonicalDeserialize, CanonicalSerialize, SerializationError};
+// we import this to prevent using multiple static libs
+#[cfg(feature = "include_rln_ffi")]
+#[allow(unused_imports)]
 use rln::ffi::*;
 use crate::ffi::CErrorCode::{NoError, SerializationErrorInvalidData, SerializationErrorIoError, SerializationErrorNotEnoughSpace, SerializationErrorUnexpectedFlags};
-use libc::c_char;
 #[repr(C)]
 #[derive(Debug)]
 pub struct CFr([u8; 32]);
@@ -389,36 +391,78 @@ mod tests {
 
     #[test]
     fn test_ffi_random_keypair() {
-        let keypair = ffi_random_keypair();
-        let private_key = Fr::try_from((*keypair).value.private_key).unwrap();
-        let public_key = G1Projective::try_from((*keypair).value.public_key).unwrap();
+        // Generate a random keypair
+        let keypair_raw = ffi_random_keypair();
+        let keypair = unsafe { &*keypair_raw };
+
+        // Extract private and public keys
+        let private_key = Fr::try_from(&keypair.value.private_key).unwrap();
+        let public_key = G1Projective::try_from(&keypair.value.public_key).unwrap();
+
+        // Drop the keypair to avoid memory leaks
+        drop_ffi_random_keypair(keypair_raw);
+
+        // Assert that the public key is on the curve
         assert!(public_key.into_affine().is_on_curve());
-        // Check the derived key matches the one generated from original key
+
+        // Check if the derived key matches the one generated from the original key
         assert_eq!(derive_public_key(private_key), public_key);
     }
 
     #[test]
     fn test_ffi_generate_stealth_commitment() {
-        let spending_key = ffi_random_keypair();
-        let viewing_key = ffi_random_keypair();
+        // Generate random keypairs
+        let spending_key_raw = ffi_random_keypair();
+        let spending_key = unsafe { &mut *spending_key_raw };
+        let viewing_key_raw = ffi_random_keypair();
+        let viewing_key = unsafe { &mut *viewing_key_raw };
+        let ephemeral_key_raw = ffi_random_keypair();
+        let ephemeral_key = unsafe { &mut *ephemeral_key_raw };
 
-        // generate ephemeral keypair
-        let ephemeral_key = ffi_random_keypair();
+        // Extract pointers
+        let viewing_pub_key_ptr = &mut viewing_key.value.public_key;
+        let viewing_priv_key_ptr = &mut viewing_key.value.private_key;
+        let spending_pub_key_ptr = &mut spending_key.value.public_key;
+        let spending_priv_key_ptr = &mut spending_key.value.private_key;
+        let ephemeral_pub_key_ptr = &mut ephemeral_key.value.public_key;
+        let ephemeral_priv_key_ptr = &mut ephemeral_key.value.private_key;
 
-        let stealth_commitment_payload = ffi_generate_stealth_commitment(
-            viewing_key.value.public_key,
-            spending_key.value.public_key,
-            ephemeral_key.value.private_key,
+        // Generate stealth commitment payload
+        let stealth_commitment_payload_raw = ffi_generate_stealth_commitment(
+            viewing_pub_key_ptr,
+            spending_pub_key_ptr,
+            ephemeral_priv_key_ptr,
+        );
+        let stealth_commitment_payload = unsafe { &mut *stealth_commitment_payload_raw };
+        let view_tag_ptr = &mut stealth_commitment_payload.value.view_tag;
+
+        // Generate stealth private key
+        let stealth_private_key_raw = ffi_generate_stealth_private_key(
+            ephemeral_pub_key_ptr,
+            viewing_priv_key_ptr,
+            spending_priv_key_ptr,
+            view_tag_ptr,
         );
 
-        let stealth_private_key =
-            ffi_generate_stealth_private_key(ephemeral_key.value.public_key, viewing_key.value.private_key, spending_key.value.private_key, stealth_commitment_payload.value.view_tag);
+        drop_ffi_random_keypair(ephemeral_key_raw);
+        drop_ffi_random_keypair(viewing_key_raw);
+        drop_ffi_random_keypair(spending_key_raw);
 
+        let stealth_private_key = unsafe { &mut *stealth_private_key_raw };
+        // Check for errors
         if stealth_private_key.err_code != NoError {
             panic!("View tags did not match");
         }
 
-        let derived_commitment = ffi_derive_public_key(stealth_private_key.value);
+        // Derive commitment
+        let derived_commitment_raw = ffi_derive_public_key(&mut stealth_private_key.value);
+        drop_ffi_generate_stealth_private_key(stealth_private_key_raw);
+
+        let derived_commitment = unsafe { &*derived_commitment_raw };
+
         assert_eq!(derived_commitment.value, stealth_commitment_payload.value.stealth_commitment);
+        // Drop all allocated memory to avoid memory leaks
+        drop_ffi_generate_stealth_commitment(stealth_commitment_payload_raw);
+        drop_ffi_derive_public_key(derived_commitment_raw);
     }
 }
