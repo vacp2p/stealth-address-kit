@@ -1,0 +1,117 @@
+# forked from https://github.com/vacp2p/zerokit
+name: Nightly build
+on:
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+
+jobs:
+  linux:
+    strategy:
+      matrix:
+        target: 
+          - x86_64-unknown-linux-gnu
+          - aarch64-unknown-linux-gnu
+          - i686-unknown-linux-gnu
+    name: Linux build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v3
+      - name: Install stable toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+          target: ${{ matrix.target }}
+      - uses: Swatinem/rust-cache@v2
+      - name: Install dependencies
+        run: make deps
+      - name: cross build
+        run: |
+          cross build --release --target ${{ matrix.target }} --all-features 
+          mkdir release
+          cp target/${{ matrix.target }}/release/liberc5564* release/
+          tar -czvf ${{ matrix.target }}-erc-5564-bn254.tar.gz release/
+
+      - name: Upload archive artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ matrix.target }}-archive
+          path: ${{ matrix.target }}-erc-5564-bn254.tar.gz
+          retention-days: 2
+
+  macos:
+    name: MacOS build
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        target: 
+          - x86_64-apple-darwin
+          - aarch64-apple-darwin
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v3
+      - name: Install stable toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+          target: ${{ matrix.target }}
+      - uses: Swatinem/rust-cache@v2
+      - name: Install dependencies
+        run: make installdeps
+      - name: cross build
+        run: |
+          cross build --release --target ${{ matrix.target }} --all-features
+          mkdir release
+          cp target/${{ matrix.target }}/release/liberc5564* release/
+          tar -czvf ${{ matrix.target }}-erc-5564-bn254.tar.gz release/
+
+      - name: Upload archive artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ matrix.target }}-archive
+          path: ${{ matrix.target }}-erc-5564-bn254.tar.gz
+          retention-days: 2
+  
+  prepare-prerelease:
+    name: Prepare pre-release
+    needs: [linux, macos]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          ref: master
+      - name: Download artifacts
+        uses: actions/download-artifact@v2
+          
+      - name: Delete tag
+        uses: dev-drprasad/delete-tag-and-release@v0.2.1
+        with:
+          delete_release: true
+          tag_name: nightly
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create prerelease
+        run: |
+          start_tag=$(gh release list -L 2 --exclude-drafts | grep -v nightly | cut -d$'\t' -f3 | sed -n '1p')
+          gh release create nightly --prerelease --target master \
+            --title 'Nightly build ("master" branch)' \
+            --generate-notes \
+            --draft=false \
+            --notes-start-tag $start_tag \
+            *-archive/*.tar.gz \
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Delete artifacts
+        uses: geekyeggo/delete-artifact@v1
+        with:
+          failOnError: false
+          name: |
+            *-archive
