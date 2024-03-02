@@ -99,12 +99,10 @@ jobs:
 
       - name: Create prerelease
         run: |
-          start_tag=$(gh release list -L 2 --exclude-drafts | grep -v nightly | cut -d$'\t' -f3 | sed -n '1p')
           gh release create nightly --prerelease --target master \
             --title 'Nightly build ("master" branch)' \
             --generate-notes \
             --draft=false \
-            --notes-start-tag $start_tag \
             *-archive/*.tar.gz \
         env:
           GITHUB_TOKEN: ${{ secrets.PERSONAL_TOKEN }}
