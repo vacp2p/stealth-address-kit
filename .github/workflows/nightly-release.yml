@@ -62,7 +62,7 @@ jobs:
           target: ${{ matrix.target }}
       - uses: Swatinem/rust-cache@v2
       - name: Install dependencies
-        run: make installdeps
+        run: make deps
       - name: cross build
         run: |
           cross build --release --target ${{ matrix.target }} --all-features
