@@ -32,7 +32,7 @@ jobs:
         run: |
           cross build --release --target ${{ matrix.target }} --all-features 
           mkdir release
-          cp target/${{ matrix.target }}/release/liberc5564* release/
+          cp target/${{ matrix.target }}/release/*.a release/
           tar -czvf ${{ matrix.target }}-erc-5564-bn254.tar.gz release/
 
       - name: Upload archive artifact
@@ -67,7 +67,7 @@ jobs:
         run: |
           cross build --release --target ${{ matrix.target }} --all-features
           mkdir release
-          cp target/${{ matrix.target }}/release/liberc5564* release/
+          cp target/${{ matrix.target }}/release/*.a release/
           tar -czvf ${{ matrix.target }}-erc-5564-bn254.tar.gz release/
 
       - name: Upload archive artifact
