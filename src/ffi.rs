@@ -2,11 +2,8 @@ use crate::ffi::CErrorCode::{
     NoError, SerializationErrorInvalidData, SerializationErrorIoError,
     SerializationErrorNotEnoughSpace, SerializationErrorUnexpectedFlags,
 };
-use crate::stealth_commitments::{
-    derive_public_key, generate_random_fr, generate_stealth_commitment,
-    generate_stealth_private_key, random_keypair,
-};
-use ark_bn254::{Fr, G1Projective};
+use crate::stealth_commitments::{StealthAddressOnCurve};
+use ark_bn254::{Bn254, Fr, G1Projective};
 use ark_serialize::{CanonicalDeserialize, CanonicalSerialize, SerializationError};
 use num_traits::Zero;
 use std::ops::Add;
@@ -193,7 +190,7 @@ impl TryInto<(G1Projective, u64)> for CStealthCommitment {
 
 #[no_mangle]
 pub extern "C" fn ffi_generate_random_fr() -> *mut CReturn<CFr> {
-    let res = match CFr::try_from(generate_random_fr()) {
+    let res = match CFr::try_from(Bn254::generate_random_fr()) {
         Ok(v) => CReturn {
             value: v,
             err_code: NoError,
@@ -237,7 +234,7 @@ pub extern "C" fn ffi_derive_public_key(private_key: *mut CFr) -> *mut CReturn<C
         }
     };
 
-    let res = match CG1Projective::try_from(derive_public_key(private_key)) {
+    let res = match CG1Projective::try_from(Bn254::derive_public_key(&private_key)) {
         Ok(v) => CReturn {
             value: v,
             err_code: NoError,
@@ -262,7 +259,7 @@ pub extern "C" fn drop_ffi_derive_public_key(ptr: *mut CReturn<CG1Projective>) {
 
 #[no_mangle]
 pub extern "C" fn ffi_random_keypair() -> *mut CReturn<CKeyPair> {
-    let (private_key, public_key) = random_keypair();
+    let (private_key, public_key) = Bn254::random_keypair();
     let private_key = match CFr::try_from(private_key) {
         Ok(v) => v,
         Err(err) => {
@@ -362,7 +359,7 @@ pub extern "C" fn ffi_generate_stealth_commitment(
             }))
         }
     };
-    let res = match CStealthCommitment::try_from(generate_stealth_commitment(
+    let res = match CStealthCommitment::try_from(Bn254::generate_stealth_commitment(
         viewing_public_key,
         spending_public_key,
         ephemeral_private_key,
@@ -463,7 +460,7 @@ pub extern "C" fn ffi_generate_stealth_private_key(
         }
     };
     let stealth_private_key_opt =
-        generate_stealth_private_key(ephemeral_public_key, spending_key, viewing_key, *view_tag);
+        Bn254::generate_stealth_private_key(ephemeral_public_key, spending_key, viewing_key, *view_tag);
     if stealth_private_key_opt.is_none() {
         return Box::into_raw(Box::new(CReturn {
             value: CFr::zero(),
@@ -497,7 +494,6 @@ pub extern "C" fn drop_ffi_generate_stealth_private_key(ptr: *mut CReturn<CFr>) 
 mod tests {
 
     use super::*;
-    use crate::stealth_commitments::derive_public_key;
     use ark_ec::CurveGroup;
 
     #[test]
@@ -522,7 +518,7 @@ mod tests {
         assert!(public_key.into_affine().is_on_curve());
 
         // Check if the derived key matches the one generated from the original key
-        assert_eq!(derive_public_key(private_key), public_key);
+        assert_eq!(Bn254::derive_public_key(&private_key), public_key);
     }
 
     #[test]
