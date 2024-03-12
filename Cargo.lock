@@ -766,6 +766,7 @@ dependencies = [
  "ark-ff",
  "ark-serialize",
  "ark-std",
+ "cfg-if",
  "color-eyre",
  "num-bigint",
  "num-traits",

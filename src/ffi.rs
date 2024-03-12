@@ -3,10 +3,29 @@ use crate::ffi::CErrorCode::{
     SerializationErrorNotEnoughSpace, SerializationErrorUnexpectedFlags,
 };
 use crate::stealth_commitments::{StealthAddressOnCurve};
-use ark_bn254::{Bn254, Fr, G1Projective};
 use ark_serialize::{CanonicalDeserialize, CanonicalSerialize, SerializationError};
 use num_traits::Zero;
 use std::ops::Add;
+
+cfg_if::cfg_if! {
+    if #[cfg(feature = "bls12_381")] {
+        use ark_bls12_381::{Bls12_381, Fr, G1Projective};
+        type Curve = Bls12_381;
+        const PROJECTIVE_SIZE: usize = 48;
+    } else if #[cfg(feature = "bls12_377")] {
+        use ark_bls12_377::{Bls12_377, Fr, G1Projective};
+        type Curve = Bls12_377;
+        const PROJECTIVE_SIZE: usize = 48;
+    } else if #[cfg(feature = "bn254")] {
+        use ark_bn254::{Bn254, Fr, G1Projective};
+        type Curve = Bn254;
+        const PROJECTIVE_SIZE: usize = 32;
+    } else {
+        compile_error!("Enable one curve in features: [bn254, bls12_388, bls12_377]");
+    }
+}
+
+
 // we import this to prevent using multiple static libs
 #[cfg(feature = "include_rln_ffi")]
 #[allow(unused_imports)]
@@ -92,7 +111,7 @@ impl From<&CFr> for Fr {
 
 #[repr(C)]
 #[derive(Debug, PartialOrd, PartialEq)]
-pub struct CG1Projective([u8; 32]);
+pub struct CG1Projective([u8; PROJECTIVE_SIZE]);
 
 impl Add for CG1Projective {
     type Output = Self;
@@ -120,7 +139,7 @@ impl TryFrom<G1Projective> for CG1Projective {
     fn try_from(value: G1Projective) -> Result<Self, Self::Error> {
         let mut buf = Vec::new();
         value.serialize_compressed(&mut buf)?;
-        let mut result = [0u8; 32];
+        let mut result = [0u8; PROJECTIVE_SIZE];
         result.copy_from_slice(&buf);
         Ok(CG1Projective(result))
     }
@@ -190,7 +209,7 @@ impl TryInto<(G1Projective, u64)> for CStealthCommitment {
 
 #[no_mangle]
 pub extern "C" fn ffi_generate_random_fr() -> *mut CReturn<CFr> {
-    let res = match CFr::try_from(Bn254::generate_random_fr()) {
+    let res = match CFr::try_from(Curve::generate_random_fr()) {
         Ok(v) => CReturn {
             value: v,
             err_code: NoError,
@@ -234,7 +253,7 @@ pub extern "C" fn ffi_derive_public_key(private_key: *mut CFr) -> *mut CReturn<C
         }
     };
 
-    let res = match CG1Projective::try_from(Bn254::derive_public_key(&private_key)) {
+    let res = match CG1Projective::try_from(Curve::derive_public_key(&private_key)) {
         Ok(v) => CReturn {
             value: v,
             err_code: NoError,
@@ -259,7 +278,7 @@ pub extern "C" fn drop_ffi_derive_public_key(ptr: *mut CReturn<CG1Projective>) {
 
 #[no_mangle]
 pub extern "C" fn ffi_random_keypair() -> *mut CReturn<CKeyPair> {
-    let (private_key, public_key) = Bn254::random_keypair();
+    let (private_key, public_key) = Curve::random_keypair();
     let private_key = match CFr::try_from(private_key) {
         Ok(v) => v,
         Err(err) => {
@@ -359,7 +378,7 @@ pub extern "C" fn ffi_generate_stealth_commitment(
             }))
         }
     };
-    let res = match CStealthCommitment::try_from(Bn254::generate_stealth_commitment(
+    let res = match CStealthCommitment::try_from(Curve::generate_stealth_commitment(
         viewing_public_key,
         spending_public_key,
         ephemeral_private_key,
@@ -460,7 +479,7 @@ pub extern "C" fn ffi_generate_stealth_private_key(
         }
     };
     let stealth_private_key_opt =
-        Bn254::generate_stealth_private_key(ephemeral_public_key, spending_key, viewing_key, *view_tag);
+        Curve::generate_stealth_private_key(ephemeral_public_key, spending_key, viewing_key, *view_tag);
     if stealth_private_key_opt.is_none() {
         return Box::into_raw(Box::new(CReturn {
             value: CFr::zero(),
@@ -518,7 +537,7 @@ mod tests {
         assert!(public_key.into_affine().is_on_curve());
 
         // Check if the derived key matches the one generated from the original key
-        assert_eq!(Bn254::derive_public_key(&private_key), public_key);
+        assert_eq!(Curve::derive_public_key(&private_key), public_key);
     }
 
     #[test]

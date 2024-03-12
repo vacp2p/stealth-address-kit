@@ -10,6 +10,9 @@ crate-type = ["staticlib"]
 
 [features]
 ffi = []
+bls12_381 = []
+bls12_377 = []
+bn254 = []
 include_rln_ffi = []
 default = ["ffi"]
 
@@ -27,6 +30,7 @@ ark-bls12-377 = "0.4.0"
 tiny-keccak = { version = "=2.0.2", features = ["keccak"] }
 ark-ec = "0.4.1"
 ark-serialize = "0.4.1"
+cfg-if = "1.0.0"
 
 [dev-dependencies]
 serde_json = "1.0.96"
