@@ -49,6 +49,29 @@ dependencies = [
 ]
 
 [[package]]
+name = "ark-bls12-377"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fb00293ba84f51ce3bd026bd0de55899c4e68f0a39a5728cebae3a73ffdc0a4f"
+dependencies = [
+ "ark-ec",
+ "ark-ff",
+ "ark-std",
+]
+
+[[package]]
+name = "ark-bls12-381"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c775f0d12169cba7aae4caeb547bb6a50781c7449a8aa53793827c9ec4abf488"
+dependencies = [
+ "ark-ec",
+ "ark-ff",
+ "ark-serialize",
+ "ark-std",
+]
+
+[[package]]
 name = "ark-bn254"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -736,6 +759,8 @@ dependencies = [
 name = "erc-5564-bn254"
 version = "0.1.0"
 dependencies = [
+ "ark-bls12-377",
+ "ark-bls12-381",
  "ark-bn254",
  "ark-ec",
  "ark-ff",
@@ -746,6 +771,7 @@ dependencies = [
  "num-traits",
  "rln",
  "serde_json",
+ "tiny-keccak",
 ]
 
 [[package]]

@@ -1,6 +1,12 @@
-# erc-5564-bn254
+# erc-5564-rs
 
 Uses the [arkworks-rs](https://github.com/arkworks-rs/curves) suite of libraries, and utilities from [rln](https://github.com/vacp2p/zerokit)
+
+## Existing Implementations
+
+1. `ark_bn254`
+2. `ark_bls_12_381`
+3. `ark_bls_12_377`
 
 ## Usage
 

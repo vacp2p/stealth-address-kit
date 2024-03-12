@@ -1,3 +1,7 @@
+use crate::ffi::CErrorCode::{
+    NoError, SerializationErrorInvalidData, SerializationErrorIoError,
+    SerializationErrorNotEnoughSpace, SerializationErrorUnexpectedFlags,
+};
 use crate::stealth_commitments::{
     derive_public_key, generate_random_fr, generate_stealth_commitment,
     generate_stealth_private_key, random_keypair,
@@ -6,10 +10,6 @@ use ark_bn254::{Fr, G1Projective};
 use ark_serialize::{CanonicalDeserialize, CanonicalSerialize, SerializationError};
 use num_traits::Zero;
 use std::ops::Add;
-use crate::ffi::CErrorCode::{
-    NoError, SerializationErrorInvalidData, SerializationErrorIoError,
-    SerializationErrorNotEnoughSpace, SerializationErrorUnexpectedFlags,
-};
 // we import this to prevent using multiple static libs
 #[cfg(feature = "include_rln_ffi")]
 #[allow(unused_imports)]
