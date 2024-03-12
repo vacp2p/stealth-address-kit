@@ -65,7 +65,7 @@ pub trait StealthAddressOnCurve {
         let q_receiver_hashed = Self::hash_to_fr(inputs_receiver.as_bytes());
 
         // Check if retrieved view tag matches the expected view tag
-        let view_tag: u64 = q_receiver_hashed.as_u64();
+        let view_tag = q_receiver_hashed.as_u64();
         if view_tag == expected_view_tag {
             let stealth_private_key = spending_key + q_receiver_hashed;
             Some(stealth_private_key)
