@@ -18,6 +18,9 @@ cfg_if::cfg_if! {
         const PROJECTIVE_SIZE: usize = 48;
     } else if #[cfg(feature = "bn254")] {
         use ark_bn254::{Bn254, Fr, G1Projective};
+        // we import this to prevent using multiple static libs
+        #[allow(unused_imports)]
+        use rln::ffi::*;
         type Curve = Bn254;
         const PROJECTIVE_SIZE: usize = 32;
     } else {
@@ -26,10 +29,7 @@ cfg_if::cfg_if! {
 }
 
 
-// we import this to prevent using multiple static libs
-#[cfg(feature = "include_rln_ffi")]
-#[allow(unused_imports)]
-use rln::ffi::*;
+
 #[repr(C)]
 #[derive(Debug)]
 pub struct CFr([u8; 32]);

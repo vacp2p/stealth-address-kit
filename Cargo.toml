@@ -13,7 +13,6 @@ ffi = []
 bls12_381 = []
 bls12_377 = []
 bn254 = []
-include_rln_ffi = []
 default = ["ffi"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
