@@ -21,7 +21,7 @@ cfg_if::cfg_if! {
         type Curve = Bn254;
         const PROJECTIVE_SIZE: usize = 32;
     } else {
-        compile_error!("Enable one curve in features: [bn254, bls12_388, bls12_377]");
+        compile_error!("Enable one curve in features: [bn254, bls12_381, bls12_377]");
     }
 }
 

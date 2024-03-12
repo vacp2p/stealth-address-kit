@@ -9,6 +9,10 @@ jobs:
   linux:
     strategy:
       matrix:
+        curve:
+          - bn254
+          - bls12_381
+          - bls12_377
         target: 
           - x86_64-unknown-linux-gnu
           - aarch64-unknown-linux-gnu
@@ -30,16 +34,16 @@ jobs:
         run: make deps
       - name: cross build
         run: |
-          cross build --release --target ${{ matrix.target }} --all-features 
+          cross build --release --target ${{ matrix.target }} --features ${{ matrix.curve }}
           mkdir release
           cp target/${{ matrix.target }}/release/*.a release/
-          tar -czvf ${{ matrix.target }}-erc-5564-bn254.tar.gz release/
+          tar -czvf ${{ matrix.target }}-erc-5564-${{matrix.curve}}.tar.gz release/
 
       - name: Upload archive artifact
         uses: actions/upload-artifact@v2
         with:
           name: ${{ matrix.target }}-archive
-          path: ${{ matrix.target }}-erc-5564-bn254.tar.gz
+          path: ${{ matrix.target }}-erc-5564-${{matrix.curve}}.tar.gz
           retention-days: 2
 
   macos:
@@ -47,6 +51,10 @@ jobs:
     runs-on: macos-latest
     strategy:
       matrix:
+        curve:
+          - bn254
+          - bls12_381
+          - bls12_377
         target: 
           - x86_64-apple-darwin
           - aarch64-apple-darwin
@@ -65,16 +73,16 @@ jobs:
         run: make deps
       - name: cross build
         run: |
-          cross build --release --target ${{ matrix.target }} --all-features
+          cross build --release --target ${{ matrix.target }} --feature ${{ matrix.curve }}
           mkdir release
           cp target/${{ matrix.target }}/release/*.a release/
-          tar -czvf ${{ matrix.target }}-erc-5564-bn254.tar.gz release/
+          tar -czvf ${{ matrix.target }}-erc-5564-${{ matrix.curve }}.tar.gz release/
 
       - name: Upload archive artifact
         uses: actions/upload-artifact@v2
         with:
           name: ${{ matrix.target }}-archive
-          path: ${{ matrix.target }}-erc-5564-bn254.tar.gz
+          path: ${{ matrix.target }}-erc-5564-${{ matrix.curve }}.tar.gz
           retention-days: 2
   
   prepare-prerelease:

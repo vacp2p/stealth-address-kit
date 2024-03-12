@@ -39,14 +39,18 @@ fn main() {
 ## Building and Testing
 
 1. Building
-    `cargo build --release --features <bn254/bls12_388/bls12_377>`
+    `cargo build --release --features <bn254/bls12_381/bls12_377>`
 
 2. Testing
-    `cargo test --release --features <bn254/bls12_388/bls12_377>`
+    `cargo test --release --features <bn254/bls12_381/bls12_377>`
 
 ## FFI Api
 
 The exposed FFI API supports one curve at a time.
+
+## Precompiled Libraries
+
+Check out the nightly releases.
 
 ## Attribution
 
