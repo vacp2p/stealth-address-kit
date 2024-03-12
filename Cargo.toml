@@ -1,10 +1,10 @@
 [package]
-name = "erc-5564-bn254"
+name = "erc-5564-rs"
 version = "0.1.0"
 edition = "2021"
 
 [lib]
-name = "erc_5564_bn254"
+name = "erc_5564_rs"
 path = "src/lib.rs"
 crate-type = ["staticlib"]
 

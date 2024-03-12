@@ -756,7 +756,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "erc-5564-bn254"
+name = "erc-5564-rs"
 version = "0.1.0"
 dependencies = [
  "ark-bls12-377",
