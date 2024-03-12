@@ -73,7 +73,7 @@ jobs:
         run: make deps
       - name: cross build
         run: |
-          cross build --release --target ${{ matrix.target }} --feature ${{ matrix.curve }}
+          cross build --release --target ${{ matrix.target }} --features ${{ matrix.curve }}
           mkdir release
           cp target/${{ matrix.target }}/release/*.a release/
           tar -czvf ${{ matrix.target }}-erc-5564-${{ matrix.curve }}.tar.gz release/
