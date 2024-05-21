@@ -13,8 +13,8 @@ Uses the [arkworks-rs](https://github.com/arkworks-rs/curves) suite of libraries
 ## Usage
 
 ```rust
-use erc_5564_rs::{StealthAddressOnCurve};
-use ark_bn254::Bn254; // or ark_bls_12_381::Bls12_381 or ark_bls_12_377::Bls12_377, erc_5564_rs::Secp256k1, erc_5564_rs::Secp256r1
+use stealth_address_kit::{StealthAddressOnCurve};
+use ark_bn254::Bn254; // or ark_bls_12_381::Bls12_381 or ark_bls_12_377::Bls12_377, stealth_address_kit::Secp256k1, stealth_address_kit::Secp256r1
 
 fn main() {
     let (spending_key, spending_public_key) = Bn254::random_keypair();

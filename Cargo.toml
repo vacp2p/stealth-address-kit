@@ -1,10 +1,10 @@
 [package]
-name = "erc-5564-rs"
+name = "stealth_address_kit"
 version = "0.1.0"
 edition = "2021"
 
 [lib]
-name = "erc_5564_rs"
+name = "stealth_address_kit"
 path = "src/lib.rs"
 crate-type = ["staticlib"]
 
