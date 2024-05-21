@@ -3,8 +3,7 @@ name = "stealth_address_kit"
 version = "0.1.0"
 edition = "2021"
 description = "Stealth Address Kit: A Rust library for generating stealth addresses."
-license = "MIT/APACHE-2.0"
-license-file = "LICENSE-APACHE"
+license = "MIT"
 homepage = "https://vac.dev"
 
 [lib]
