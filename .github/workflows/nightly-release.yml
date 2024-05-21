@@ -13,7 +13,8 @@ jobs:
           - bn254
           - bls12_381
           - bls12_377
-        target: 
+          - secp256k1
+        target:
           - x86_64-unknown-linux-gnu
           - aarch64-unknown-linux-gnu
           - i686-unknown-linux-gnu
@@ -55,7 +56,8 @@ jobs:
           - bn254
           - bls12_381
           - bls12_377
-        target: 
+          - secp256k1
+        target:
           - x86_64-apple-darwin
           - aarch64-apple-darwin
     steps:
@@ -84,7 +86,7 @@ jobs:
           name: ${{ matrix.target }}-archive
           path: ${{ matrix.target }}-erc-5564-${{ matrix.curve }}.tar.gz
           retention-days: 2
-  
+
   prepare-prerelease:
     name: Prepare pre-release
     needs: [linux, macos]
@@ -96,7 +98,7 @@ jobs:
           ref: master
       - name: Download artifacts
         uses: actions/download-artifact@v2
-          
+
       - name: Delete tag
         uses: dev-drprasad/delete-tag-and-release@v0.2.1
         with:

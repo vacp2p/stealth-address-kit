@@ -7,14 +7,13 @@ Uses the [arkworks-rs](https://github.com/arkworks-rs/curves) suite of libraries
 1. `ark_bn254`
 2. `ark_bls_12_381`
 3. `ark_bls_12_377`
+4. `secp256k1`
 
 ## Usage
 
-Note: this scheme should be used with the fork of [circom-rln](https://github.com/rymnc/circom-rln-erc5564). 
-
 ```rust
-use erc_5564_rs::{StealthAddressOnCurve}; // can use bls12_381_impl or bls12_377_impl too
-use ark_bn254::Bn254;
+use erc_5564_rs::{StealthAddressOnCurve};
+use ark_bn254::Bn254; // or ark_bls_12_381::Bls12_381 or ark_bls_12_377::Bls12_377, or erc_5564_rs::Secp256k1
 
 fn main() {
     let (spending_key, spending_public_key) = Bn254::random_keypair();
@@ -39,10 +38,10 @@ fn main() {
 ## Building and Testing
 
 1. Building
-    `cargo build --release --features <bn254/bls12_381/bls12_377>`
+   `cargo build --release --features <bn254/bls12_381/bls12_377/secp256k1>`
 
 2. Testing
-    `cargo test --release --features <bn254/bls12_381/bls12_377>`
+   `cargo test --release --features <bn254/bls12_381/bls12_377/secp256k1>`
 
 ## FFI Api
 
