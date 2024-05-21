@@ -2,7 +2,7 @@ use crate::ffi::CErrorCode::{
     NoError, SerializationErrorInvalidData, SerializationErrorIoError,
     SerializationErrorNotEnoughSpace, SerializationErrorUnexpectedFlags,
 };
-use crate::stealth_commitments::{StealthAddressOnCurve};
+use crate::stealth_commitments::StealthAddressOnCurve;
 use ark_serialize::{CanonicalDeserialize, CanonicalSerialize, SerializationError};
 use num_traits::Zero;
 use std::ops::Add;
@@ -16,6 +16,11 @@ cfg_if::cfg_if! {
         use ark_bls12_377::{Bls12_377, Fr, G1Projective};
         type Curve = Bls12_377;
         const PROJECTIVE_SIZE: usize = 48;
+    } else if #[cfg(feature = "secp256k1")] {
+        use crate::secp256k1::Secp256k1;
+        use ark_secp256k1::{Fr, Projective as G1Projective};
+        type Curve = Secp256k1;
+        const PROJECTIVE_SIZE: usize = 33;
     } else if #[cfg(feature = "bn254")] {
         use ark_bn254::{Bn254, Fr, G1Projective};
         // we import this to prevent using multiple static libs
@@ -24,11 +29,9 @@ cfg_if::cfg_if! {
         type Curve = Bn254;
         const PROJECTIVE_SIZE: usize = 32;
     } else {
-        compile_error!("Enable one curve in features: [bn254, bls12_381, bls12_377]");
+        compile_error!("Enable one curve in features: [bn254, bls12_381, bls12_377, secp256k1]");
     }
 }
-
-
 
 #[repr(C)]
 #[derive(Debug)]
@@ -478,8 +481,12 @@ pub extern "C" fn ffi_generate_stealth_private_key(
             }))
         }
     };
-    let stealth_private_key_opt =
-        Curve::generate_stealth_private_key(ephemeral_public_key, spending_key, viewing_key, *view_tag);
+    let stealth_private_key_opt = Curve::generate_stealth_private_key(
+        ephemeral_public_key,
+        spending_key,
+        viewing_key,
+        *view_tag,
+    );
     if stealth_private_key_opt.is_none() {
         return Box::into_raw(Box::new(CReturn {
             value: CFr::zero(),
