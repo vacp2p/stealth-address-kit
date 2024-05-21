@@ -12,6 +12,7 @@ crate-type = ["staticlib"]
 ffi = []
 bls12_381 = []
 bls12_377 = []
+secp256k1 = []
 bn254 = []
 default = ["ffi"]
 
@@ -26,6 +27,7 @@ ark-ff = "0.4.1"
 ark-bn254 = "0.4.0"
 ark-bls12-381 = "0.4.0"
 ark-bls12-377 = "0.4.0"
+ark-secp256k1 = "0.4.0"
 tiny-keccak = { version = "=2.0.2", features = ["keccak"] }
 ark-ec = "0.4.1"
 ark-serialize = "0.4.1"
