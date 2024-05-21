@@ -1,4 +1,4 @@
-# erc-5564-rs
+# stealth-address-kit
 
 Uses the [arkworks-rs](https://github.com/arkworks-rs/curves) suite of libraries, and utilities from [rln](https://github.com/vacp2p/zerokit)
 
@@ -8,12 +8,13 @@ Uses the [arkworks-rs](https://github.com/arkworks-rs/curves) suite of libraries
 2. `ark_bls_12_381`
 3. `ark_bls_12_377`
 4. `secp256k1`
+5. `secp256r1`
 
 ## Usage
 
 ```rust
 use erc_5564_rs::{StealthAddressOnCurve};
-use ark_bn254::Bn254; // or ark_bls_12_381::Bls12_381 or ark_bls_12_377::Bls12_377, or erc_5564_rs::Secp256k1
+use ark_bn254::Bn254; // or ark_bls_12_381::Bls12_381 or ark_bls_12_377::Bls12_377, erc_5564_rs::Secp256k1, erc_5564_rs::Secp256r1
 
 fn main() {
     let (spending_key, spending_public_key) = Bn254::random_keypair();
@@ -35,13 +36,23 @@ fn main() {
 }
 ```
 
+## Adding a new curve
+
+1. Add the curve to the `Cargo.toml` file, as a feature
+2. Create a new module in the `src` directory, with the curve name, suffixed by `_impl.rs`
+3. Implement the `StealthAddressOnCurve` trait for the curve
+4. Add the curve to the `lib.rs` file, in the `mod` declaration
+5. Add the curve to the FFI API, in the `ffi.rs` file
+6. Add the curve to the README
+7. Add the curve to the nightly release workflow
+
 ## Building and Testing
 
 1. Building
-   `cargo build --release --features <bn254/bls12_381/bls12_377/secp256k1>`
+   `cargo build --release --features <bn254/bls12_381/bls12_377/secp256k1/secp256r1>`
 
 2. Testing
-   `cargo test --release --features <bn254/bls12_381/bls12_377/secp256k1>`
+   `cargo test --release --features <bn254/bls12_381/bls12_377/secp256k1/secp256r1>`
 
 ## FFI Api
 

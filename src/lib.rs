@@ -6,9 +6,10 @@ mod bls12_377_impl;
 mod bls12_381_impl;
 #[cfg(feature = "bn254")]
 mod bn254_impl;
-
 #[cfg(feature = "secp256k1")]
-mod secp256k1;
+mod secp256k1_impl;
+#[cfg(feature = "secp256r1")]
+mod secp256r1_impl;
 
 #[cfg(feature = "ffi")]
 mod ffi;
