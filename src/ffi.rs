@@ -631,13 +631,27 @@ cfg_if!(
 
 cfg_if!(
     if #[cfg(feature = "secp256k1")] {
-        use crate::secp256k1::Secp256k1;
+        use crate::secp256k1_impl::Secp256k1;
         use ark_secp256k1::{Fr as Secp256k1_Fr, Projective as Secp256k1_Projective};
         define_curve_ffi!(
             secp256k1,
             Secp256k1,
             Secp256k1_Fr,
             Secp256k1_Projective,
+            33
+        );
+    }
+);
+
+cfg_if!(
+    if #[cfg(feature = "secp256r1")] {
+        use crate::secp256r1_impl::Secp256r1;
+        use ark_secp256r1::{Fr as Secp256r1_Fr, Projective as Secp256r1_Projective};
+        define_curve_ffi!(
+            secp256r1,
+            Secp256r1,
+            Secp256r1_Fr,
+            Secp256r1_Projective,
             33
         );
     }

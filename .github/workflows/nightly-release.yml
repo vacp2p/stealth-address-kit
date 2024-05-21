@@ -14,6 +14,7 @@ jobs:
           - bls12_381
           - bls12_377
           - secp256k1
+          - secp256r1
           - all
         target:
           - x86_64-unknown-linux-gnu
@@ -58,6 +59,7 @@ jobs:
           - bls12_381
           - bls12_377
           - secp256k1
+          - secp256r1
           - all
         target:
           - x86_64-apple-darwin
