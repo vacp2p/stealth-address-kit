@@ -45,7 +45,7 @@ fn main() {
 
 ## FFI Api
 
-The exposed FFI API supports one curve at a time.
+The exposed FFI API supports all curves, prefixed by the curve name. Ensure that the correct feature is enabled when building the library.
 
 ## Precompiled Libraries
 
