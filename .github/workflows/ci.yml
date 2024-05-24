@@ -52,7 +52,7 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Lint
-        run: cargo fmt -- --check
+        run: cargo fmt --all --check
   test:
     runs-on: ubuntu-latest
 
