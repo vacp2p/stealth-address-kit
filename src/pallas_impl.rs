@@ -1,23 +1,21 @@
 use crate::define_curve_tests;
 use crate::stealth_commitments::{AffineWrapper, RawFr, StealthAddressOnCurve};
-use ark_bls12_381::g1::{G1_GENERATOR_X, G1_GENERATOR_Y};
-
-use ark_bls12_381::{Fq, Fr, G1Affine, G1Projective};
 use ark_ff::PrimeField;
+use ark_pallas::{Affine, Fq, Fr, Projective, G_GENERATOR_X, G_GENERATOR_Y};
 use tiny_keccak::{Hasher, Keccak};
 
 #[allow(non_camel_case_types)]
-pub struct Bls12_381_G1Affine(G1Affine);
-impl AffineWrapper for Bls12_381_G1Affine {
+pub struct PallasAffine(Affine);
+impl AffineWrapper for PallasAffine {
     type Fq = Fq;
     fn new(x: Self::Fq, y: Self::Fq) -> Self {
-        Bls12_381_G1Affine(G1Affine::new(x, y))
+        PallasAffine(Affine::new(x, y))
     }
 }
 
-impl From<Bls12_381_G1Affine> for G1Projective {
-    fn from(value: Bls12_381_G1Affine) -> Self {
-        G1Projective::from(value.0)
+impl From<PallasAffine> for Projective {
+    fn from(value: PallasAffine) -> Self {
+        Projective::from(value.0)
     }
 }
 
@@ -28,14 +26,16 @@ impl RawFr for Fr {
     }
 }
 
-impl StealthAddressOnCurve for ark_bls12_381::Bls12_381 {
-    type Projective = G1Projective;
-    type Affine = Bls12_381_G1Affine;
+pub struct Pallas;
+
+impl StealthAddressOnCurve for Pallas {
+    type Projective = Projective;
+    type Affine = PallasAffine;
     type Fr = Fr;
 
     fn derive_public_key(private_key: &Self::Fr) -> Self::Projective {
-        let g1_generator_affine = Self::Affine::new(G1_GENERATOR_X, G1_GENERATOR_Y);
-        (Self::Projective::from(g1_generator_affine)) * *private_key
+        let generator_affine = Self::Affine::new(G_GENERATOR_X, G_GENERATOR_Y);
+        (Self::Projective::from(generator_affine)) * *private_key
     }
 
     fn hash_to_fr(input: &[u8]) -> Self::Fr {
@@ -49,4 +49,4 @@ impl StealthAddressOnCurve for ark_bls12_381::Bls12_381 {
     }
 }
 
-define_curve_tests!(ark_bls12_381::Bls12_381);
+define_curve_tests!(Pallas);
