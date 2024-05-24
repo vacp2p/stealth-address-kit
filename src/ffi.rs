@@ -656,3 +656,31 @@ cfg_if!(
         );
     }
 );
+
+cfg_if!(
+    if #[cfg(feature = "pallas")] {
+        use crate::pallas_impl::Pallas;
+        use ark_pallas::{Fr as Pallas_Fr, Projective as Pallas_Projective};
+        define_curve_ffi!(
+            pallas,
+            Pallas,
+            Pallas_Fr,
+            Pallas_Projective,
+            33
+        );
+    }
+);
+
+cfg_if!(
+    if #[cfg(feature = "vesta")] {
+        use crate::vesta_impl::Vesta;
+        use ark_vesta::{Fr as Vesta_Fr, Projective as Vesta_Projective};
+        define_curve_ffi!(
+            vesta,
+            Vesta,
+            Vesta_Fr,
+            Vesta_Projective,
+            33
+        );
+    }
+);
