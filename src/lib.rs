@@ -1,5 +1,5 @@
+mod macros;
 mod stealth_commitments;
-mod test_gen_macro;
 
 #[cfg(feature = "bls12_377")]
 mod bls12_377_impl;
