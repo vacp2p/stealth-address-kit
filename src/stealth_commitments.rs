@@ -1,4 +1,4 @@
-use ark_ec::CurveGroup;
+use ark_ec::{CurveGroup, Group};
 use ark_ff::{Fp, FpConfig, PrimeField};
 use ark_serialize::CanonicalSerialize;
 use ark_std::rand::rngs::OsRng;
@@ -7,13 +7,6 @@ use std::fmt::Display;
 use std::ops::{Add, Mul};
 
 use tiny_keccak::{Hasher, Keccak};
-
-pub trait AffineWrapper {
-    type Fq: ark_ff::PrimeField;
-    fn new(x: Self::Fq, y: Self::Fq) -> Self;
-    fn get_generator_x() -> Self::Fq;
-    fn get_generator_y() -> Self::Fq;
-}
 
 pub trait HasViewTag {
     fn get_view_tag(&self) -> u64;
@@ -47,16 +40,12 @@ pub trait StealthAddressOnCurve {
     type Projective: Display
         + Add<Output = Self::Projective>
         + Mul<Self::Fr, Output = Self::Projective>
-        + From<Self::Affine>
+        + From<<Self::Projective as CurveGroup>::Affine>
         + ark_ec::CurveGroup;
-    type Affine: AffineWrapper;
     type Fr: Add<Self::Fr, Output = Self::Fr> + ark_ff::PrimeField + HasViewTag;
+
     fn derive_public_key(private_key: &Self::Fr) -> Self::Projective {
-        let generator_affine = Self::Affine::new(
-            Self::Affine::get_generator_x(),
-            Self::Affine::get_generator_y(),
-        );
-        (Self::Projective::from(generator_affine)) * *private_key
+        Self::Projective::generator() * *private_key
     }
 
     fn random_keypair() -> (Self::Fr, Self::Projective) {
