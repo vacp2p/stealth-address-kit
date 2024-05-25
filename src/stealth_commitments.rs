@@ -1,8 +1,11 @@
+use ark_ec::CurveGroup;
 use ark_ff::{Fp, FpConfig, PrimeField};
+use ark_serialize::CanonicalSerialize;
 use ark_std::rand::rngs::OsRng;
 use ark_std::UniformRand;
 use std::fmt::Display;
 use std::ops::{Add, Mul};
+
 use tiny_keccak::{Hasher, Keccak};
 
 pub trait AffineWrapper {
@@ -23,11 +26,29 @@ impl<P: FpConfig<N>, const N: usize> HasViewTag for Fp<P, N> {
     }
 }
 
+pub trait ToBytesFromProjective {
+    fn to_bytes(&self) -> Vec<u8>;
+}
+
+// Implement ToBytesFromProjective for any ProjectiveCurve
+impl<G: CurveGroup> ToBytesFromProjective for G
+where
+    G::Affine: CanonicalSerialize,
+{
+    fn to_bytes(&self) -> Vec<u8> {
+        let affine = self.into_affine();
+        let mut bytes = Vec::new();
+        affine.serialize_uncompressed(&mut bytes).unwrap();
+        bytes
+    }
+}
+
 pub trait StealthAddressOnCurve {
     type Projective: Display
         + Add<Output = Self::Projective>
         + Mul<Self::Fr, Output = Self::Projective>
-        + From<Self::Affine>;
+        + From<Self::Affine>
+        + ark_ec::CurveGroup;
     type Affine: AffineWrapper;
     type Fr: Add<Self::Fr, Output = Self::Fr> + ark_ff::PrimeField + HasViewTag;
     fn derive_public_key(private_key: &Self::Fr) -> Self::Projective {
@@ -69,9 +90,7 @@ pub trait StealthAddressOnCurve {
         ephemeral_private_key: Self::Fr,
     ) -> (Self::Projective, u64) {
         let q = Self::compute_shared_point(ephemeral_private_key, viewing_public_key);
-        let inputs = q.to_string();
-        let q_hashed = Self::hash_to_fr(inputs.as_bytes());
-
+        let q_hashed = Self::hash_to_fr(&q.to_bytes());
         let q_hashed_in_g1 = Self::derive_public_key(&q_hashed);
         let view_tag = q_hashed.get_view_tag();
         (q_hashed_in_g1 + spending_public_key, view_tag)
@@ -85,8 +104,7 @@ pub trait StealthAddressOnCurve {
     ) -> Option<Self::Fr> {
         let q_receiver = Self::compute_shared_point(viewing_key, ephemeral_public_key);
 
-        let inputs_receiver = q_receiver.to_string();
-        let q_receiver_hashed = Self::hash_to_fr(inputs_receiver.as_bytes());
+        let q_receiver_hashed = Self::hash_to_fr(&q_receiver.to_bytes());
 
         // Check if retrieved view tag matches the expected view tag
         let view_tag = q_receiver_hashed.get_view_tag();
