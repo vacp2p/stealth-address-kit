@@ -9,6 +9,8 @@ Uses the [arkworks-rs](https://github.com/arkworks-rs/curves) suite of libraries
 3. `ark_bls_12_377`
 4. `secp256k1`
 5. `secp256r1`
+6. `pallas`
+7. `vesta`
 
 ## Usage
 
