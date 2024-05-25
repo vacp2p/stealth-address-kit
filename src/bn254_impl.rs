@@ -1,10 +1,11 @@
-use crate::define_curve_tests;
 use crate::stealth_commitments::StealthAddressOnCurve;
-
-use ark_bn254::{Fr, G1Projective};
+use crate::{define_curve_ffi, define_curve_tests};
+use ark_bn254::{Bn254, Fr, G1Projective};
+#[allow(unused_imports)]
+use rln::ffi::*;
 use rln::hashers::{hash_to_field, poseidon_hash};
 
-impl StealthAddressOnCurve for ark_bn254::Bn254 {
+impl StealthAddressOnCurve for Bn254 {
     type Projective = G1Projective;
     type Fr = Fr;
 
@@ -13,7 +14,9 @@ impl StealthAddressOnCurve for ark_bn254::Bn254 {
     }
 }
 
-define_curve_tests!(ark_bn254::Bn254);
+#[cfg(feature = "ffi")]
+define_curve_ffi!(bn254, Bn254, Fr, G1Projective, 32, 32);
+define_curve_tests!(Bn254);
 
 #[cfg(test)]
 mod rln_tests {
