@@ -1,8 +1,7 @@
 use crate::define_curve_tests;
-use crate::stealth_commitments::{AffineWrapper, RawFr, StealthAddressOnCurve};
+use crate::stealth_commitments::{AffineWrapper, StealthAddressOnCurve};
 use ark_bn254::g1::{G1_GENERATOR_X, G1_GENERATOR_Y};
 use ark_bn254::{Fq, Fr, G1Affine, G1Projective};
-
 use rln::hashers::{hash_to_field, poseidon_hash};
 
 impl AffineWrapper for G1Affine {
@@ -10,12 +9,13 @@ impl AffineWrapper for G1Affine {
     fn new(x: Self::Fq, y: Self::Fq) -> Self {
         G1Affine::new(x, y)
     }
-}
 
-impl RawFr for Fr {
-    type Fr = Fr;
-    fn as_u64(&self) -> u64 {
-        self.0 .0[0]
+    fn get_generator_x() -> Self::Fq {
+        G1_GENERATOR_X
+    }
+
+    fn get_generator_y() -> Self::Fq {
+        G1_GENERATOR_Y
     }
 }
 
@@ -23,11 +23,6 @@ impl StealthAddressOnCurve for ark_bn254::Bn254 {
     type Projective = G1Projective;
     type Affine = G1Affine;
     type Fr = Fr;
-
-    fn derive_public_key(private_key: &Self::Fr) -> Self::Projective {
-        let g1_generator_affine = Self::Affine::new(G1_GENERATOR_X, G1_GENERATOR_Y);
-        (Self::Projective::from(g1_generator_affine)) * *private_key
-    }
 
     fn hash_to_fr(input: &[u8]) -> Self::Fr {
         poseidon_hash(&[hash_to_field(input)])
