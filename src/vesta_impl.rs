@@ -1,6 +1,6 @@
 use crate::define_curve_tests;
 use crate::stealth_commitments::StealthAddressOnCurve;
-use ark_vesta::{Affine, Fq, Fr, Projective, G_GENERATOR_X, G_GENERATOR_Y};
+use ark_vesta::{Fr, Projective};
 
 pub struct Vesta;
 

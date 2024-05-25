@@ -1,6 +1,6 @@
 use crate::define_curve_tests;
 use crate::stealth_commitments::StealthAddressOnCurve;
-use ark_secp256r1::{Affine, Fq, Fr, Projective};
+use ark_secp256r1::{Fr, Projective};
 
 pub struct Secp256r1;
 

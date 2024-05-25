@@ -1,6 +1,6 @@
 use crate::define_curve_tests;
 use crate::stealth_commitments::StealthAddressOnCurve;
-use ark_pallas::{Affine, Fq, Fr, Projective, G_GENERATOR_X, G_GENERATOR_Y};
+use ark_pallas::{Fr, Projective};
 
 pub struct Pallas;
 

@@ -1,7 +1,7 @@
 use crate::define_curve_tests;
 use crate::stealth_commitments::StealthAddressOnCurve;
-use ark_bn254::g1::{G1_GENERATOR_X, G1_GENERATOR_Y};
-use ark_bn254::{Fq, Fr, G1Affine, G1Projective};
+
+use ark_bn254::{Fr, G1Projective};
 use rln::hashers::{hash_to_field, poseidon_hash};
 
 impl StealthAddressOnCurve for ark_bn254::Bn254 {
