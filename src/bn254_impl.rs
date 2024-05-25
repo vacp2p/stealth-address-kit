@@ -1,27 +1,11 @@
 use crate::define_curve_tests;
-use crate::stealth_commitments::{AffineWrapper, StealthAddressOnCurve};
+use crate::stealth_commitments::StealthAddressOnCurve;
 use ark_bn254::g1::{G1_GENERATOR_X, G1_GENERATOR_Y};
 use ark_bn254::{Fq, Fr, G1Affine, G1Projective};
 use rln::hashers::{hash_to_field, poseidon_hash};
 
-impl AffineWrapper for G1Affine {
-    type Fq = Fq;
-    fn new(x: Self::Fq, y: Self::Fq) -> Self {
-        G1Affine::new(x, y)
-    }
-
-    fn get_generator_x() -> Self::Fq {
-        G1_GENERATOR_X
-    }
-
-    fn get_generator_y() -> Self::Fq {
-        G1_GENERATOR_Y
-    }
-}
-
 impl StealthAddressOnCurve for ark_bn254::Bn254 {
     type Projective = G1Projective;
-    type Affine = G1Affine;
     type Fr = Fr;
 
     fn hash_to_fr(input: &[u8]) -> Self::Fr {
