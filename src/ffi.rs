@@ -1,49 +1,43 @@
-use crate::ffi::CErrorCode::{
-    NoError, SerializationErrorInvalidData, SerializationErrorIoError,
-    SerializationErrorNotEnoughSpace, SerializationErrorUnexpectedFlags,
-};
-use crate::stealth_commitments::StealthAddressOnCurve;
-use ark_serialize::{CanonicalDeserialize, CanonicalSerialize, SerializationError};
-use cfg_if::cfg_if;
-use num_traits::Zero;
-use paste::paste;
-use std::ops::Add;
-
-#[repr(C)]
-#[derive(Debug, PartialOrd, PartialEq)]
-pub enum CErrorCode {
-    NoError = 0,
-    SerializationErrorNotEnoughSpace = 1,
-    SerializationErrorInvalidData = 2,
-    SerializationErrorUnexpectedFlags = 3,
-    SerializationErrorIoError = 4,
-    InvalidKeys = 5,
-}
-
-impl From<SerializationError> for CErrorCode {
-    fn from(value: SerializationError) -> Self {
-        match value {
-            SerializationError::NotEnoughSpace => SerializationErrorNotEnoughSpace,
-            SerializationError::InvalidData => SerializationErrorInvalidData,
-            SerializationError::UnexpectedFlags => SerializationErrorUnexpectedFlags,
-            SerializationError::IoError(_) => SerializationErrorIoError,
-        }
-    }
-}
-
-#[repr(C)]
-#[derive(Debug)]
-pub struct CReturn<T> {
-    value: T,
-    err_code: CErrorCode,
-}
-
+#[macro_export]
 macro_rules! define_curve_ffi {
-    ($curve_name:ident, $Curve:ty, $Fr:ty, $G1Projective:ty, $PROJECTIVE_SIZE:expr) => {
+    ($curve_name:ident, $Curve:ty, $Fr:ty, $G1Projective:ty, $FR_SIZE: expr, $PROJECTIVE_SIZE:expr) => {
+        use paste::paste;
+        use ark_serialize::{CanonicalDeserialize, CanonicalSerialize, SerializationError};
+        use num_traits::Zero;
+        use std::ops::Add;
+
+        #[repr(C)]
+        #[derive(Debug, PartialOrd, PartialEq)]
+        pub enum CErrorCode {
+            NoError = 0,
+            SerializationErrorNotEnoughSpace = 1,
+            SerializationErrorInvalidData = 2,
+            SerializationErrorUnexpectedFlags = 3,
+            SerializationErrorIoError = 4,
+            InvalidKeys = 5,
+        }
+
+        impl From<SerializationError> for CErrorCode {
+            fn from(value: SerializationError) -> Self {
+                match value {
+                    SerializationError::NotEnoughSpace => CErrorCode::SerializationErrorNotEnoughSpace,
+                    SerializationError::InvalidData => CErrorCode::SerializationErrorInvalidData,
+                    SerializationError::UnexpectedFlags => CErrorCode::SerializationErrorUnexpectedFlags,
+                    SerializationError::IoError(_) => CErrorCode::SerializationErrorIoError,
+                }
+            }
+        }
+
+        #[repr(C)]
+        #[derive(Debug)]
+        pub struct CReturn<T> {
+            value: T,
+            err_code: CErrorCode,
+        }
         paste! {
             #[repr(C)]
             #[derive(Debug)]
-            pub struct [<$curve_name _Fr>]([u8; 32]);
+            pub struct [<$curve_name _Fr>]([u8; $FR_SIZE]);
 
             #[repr(C)]
             #[derive(Debug, PartialOrd, PartialEq)]
@@ -89,7 +83,7 @@ macro_rules! define_curve_ffi {
                 fn try_from(value: $Fr) -> Result<Self, Self::Error> {
                     let mut buf = Vec::new();
                     value.serialize_compressed(&mut buf)?;
-                    let mut res = [0u8; 32];
+                    let mut res = [0u8; $FR_SIZE];
                     res.copy_from_slice(&buf);
                     Ok([<$curve_name _Fr>](res))
                 }
@@ -195,7 +189,7 @@ macro_rules! define_curve_ffi {
                 let res = match [<$curve_name _Fr>]::try_from(<$Curve>::generate_random_fr()) {
                     Ok(v) => CReturn {
                         value: v,
-                        err_code: NoError,
+                        err_code: CErrorCode::NoError,
                     },
                     Err(err) => CReturn {
                         value: [<$curve_name _Fr>]::zero(),
@@ -239,7 +233,7 @@ macro_rules! define_curve_ffi {
                 let res = match [<$curve_name _G1Projective>]::try_from(<$Curve>::derive_public_key(&private_key)) {
                     Ok(v) => CReturn {
                         value: v,
-                        err_code: NoError,
+                        err_code: CErrorCode::NoError,
                     },
                     Err(err) => CReturn {
                         value: [<$curve_name _G1Projective>]::zero(),
@@ -285,7 +279,7 @@ macro_rules! define_curve_ffi {
                         private_key,
                         public_key,
                     },
-                    err_code: NoError,
+                    err_code: CErrorCode::NoError,
                 };
                 Box::into_raw(Box::new(res))
             }
@@ -368,7 +362,7 @@ macro_rules! define_curve_ffi {
                 )) {
                     Ok(v) => CReturn {
                         value: v,
-                        err_code: NoError,
+                        err_code: CErrorCode::NoError,
                     },
                     Err(err) => {
                         return Box::into_raw(Box::new(CReturn {
@@ -470,7 +464,7 @@ macro_rules! define_curve_ffi {
                 ).unwrap()) {
                     Ok(v) => CReturn {
                         value: v,
-                        err_code: NoError,
+                        err_code: CErrorCode::NoError,
                     },
                     Err(err) => CReturn {
                         value: [<$curve_name _Fr>]::zero(),
@@ -491,7 +485,7 @@ macro_rules! define_curve_ffi {
             }
 
             #[cfg(test)]
-            mod [<$curve_name _tests>] {
+            mod ffi_tests {
 
                 use super::*;
                 use ark_ec::CurveGroup;
@@ -562,7 +556,7 @@ macro_rules! define_curve_ffi {
 
                     let stealth_private_key = unsafe { &mut *stealth_private_key_raw };
                     // Check for errors
-                    if stealth_private_key.err_code != NoError {
+                    if stealth_private_key.err_code != CErrorCode::NoError {
                         panic!("View tags did not match");
                     }
 
@@ -586,101 +580,3 @@ macro_rules! define_curve_ffi {
 
     };
 }
-
-cfg_if!(
-    if #[cfg(feature = "bls12_381")] {
-        use ark_bls12_381::{Bls12_381, Fr as Bls12_381_Fr, G1Projective as Bls12_381_G1Projective};
-        define_curve_ffi!(
-            bls12_381,
-            Bls12_381,
-            Bls12_381_Fr,
-            Bls12_381_G1Projective,
-            48
-        );
-    }
-);
-
-cfg_if!(
-    if #[cfg(feature = "bls12_377")] {
-        use ark_bls12_377::{Bls12_377, Fr as Bls12_377_Fr, G1Projective as Bls12_377_G1Projective};
-        define_curve_ffi!(
-            bls12_377,
-            Bls12_377,
-            Bls12_377_Fr,
-            Bls12_377_G1Projective,
-            48
-        );
-    }
-);
-
-cfg_if!(
-    if #[cfg(feature = "bn254")] {
-        use ark_bn254::{Bn254, Fr as Bn254_Fr, G1Projective as Bn254_G1Projective};
-        // we import this to prevent using multiple static libs
-        #[allow(unused_imports)]
-        use rln::ffi::*;
-        define_curve_ffi!(
-            bn254,
-            Bn254,
-            Bn254_Fr,
-            Bn254_G1Projective,
-            32
-        );
-    }
-);
-
-cfg_if!(
-    if #[cfg(feature = "secp256k1")] {
-        use crate::secp256k1_impl::Secp256k1;
-        use ark_secp256k1::{Fr as Secp256k1_Fr, Projective as Secp256k1_Projective};
-        define_curve_ffi!(
-            secp256k1,
-            Secp256k1,
-            Secp256k1_Fr,
-            Secp256k1_Projective,
-            33
-        );
-    }
-);
-
-cfg_if!(
-    if #[cfg(feature = "secp256r1")] {
-        use crate::secp256r1_impl::Secp256r1;
-        use ark_secp256r1::{Fr as Secp256r1_Fr, Projective as Secp256r1_Projective};
-        define_curve_ffi!(
-            secp256r1,
-            Secp256r1,
-            Secp256r1_Fr,
-            Secp256r1_Projective,
-            33
-        );
-    }
-);
-
-cfg_if!(
-    if #[cfg(feature = "pallas")] {
-        use crate::pallas_impl::Pallas;
-        use ark_pallas::{Fr as Pallas_Fr, Projective as Pallas_Projective};
-        define_curve_ffi!(
-            pallas,
-            Pallas,
-            Pallas_Fr,
-            Pallas_Projective,
-            33
-        );
-    }
-);
-
-cfg_if!(
-    if #[cfg(feature = "vesta")] {
-        use crate::vesta_impl::Vesta;
-        use ark_vesta::{Fr as Vesta_Fr, Projective as Vesta_Projective};
-        define_curve_ffi!(
-            vesta,
-            Vesta,
-            Vesta_Fr,
-            Vesta_Projective,
-            33
-        );
-    }
-);

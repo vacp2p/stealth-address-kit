@@ -84,6 +84,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "ark-bw6-761"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2e0605daf0cc5aa2034b78d008aaf159f56901d92a52ee4f6ecdfdac4f426700"
+dependencies = [
+ "ark-bls12-377",
+ "ark-ec",
+ "ark-ff",
+ "ark-std",
+]
+
+[[package]]
 name = "ark-circom"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1773,6 +1785,7 @@ dependencies = [
  "ark-bls12-377",
  "ark-bls12-381",
  "ark-bn254",
+ "ark-bw6-761",
  "ark-ec",
  "ark-ff",
  "ark-pallas",

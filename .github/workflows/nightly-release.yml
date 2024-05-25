@@ -17,6 +17,7 @@ jobs:
           - secp256r1
           - pallas
           - vesta
+          - bw6_761
           - all
         target:
           - x86_64-unknown-linux-gnu
@@ -64,6 +65,7 @@ jobs:
           - secp256r1
           - pallas
           - vesta
+          - bw6_761
           - all
         target:
           - x86_64-apple-darwin
