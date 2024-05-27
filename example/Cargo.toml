@@ -2,6 +2,9 @@
 name = "stealth_address_kit_example"
 version = "0.1.0"
 edition = "2021"
+description = "An example of using the stealth_address_kit library"
+license = "MIT"
+homepage = "https://vac.dev"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
