@@ -50,7 +50,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: ${{ matrix.target }}-archive
-          path: ${{ matrix.target }}-${{matrix.curve}}.tar.gz
+          path: ./sdk/${{ matrix.target }}-${{matrix.curve}}.tar.gz
           retention-days: 2
 
   macos:
@@ -96,7 +96,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: ${{ matrix.target }}-archive
-          path: ${{ matrix.target }}-${{ matrix.curve }}.tar.gz
+          path: ./sdk/${{ matrix.target }}-${{ matrix.curve }}.tar.gz
           retention-days: 2
 
   prepare-prerelease:
