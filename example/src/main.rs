@@ -6,7 +6,6 @@ type Curve = Secp256r1;
 fn print_discriminator() {
     println!("{}", "+".repeat(100));
 }
-
 fn main() {
     let (spending_key, spending_public_key) = Curve::random_keypair();
     let (viewing_key, viewing_public_key) = Curve::random_keypair();
