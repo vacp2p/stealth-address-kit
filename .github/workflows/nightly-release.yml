@@ -39,6 +39,7 @@ jobs:
       - name: Install dependencies
         run: make deps
       - name: cross build
+        working-directory: ./sdk
         run: |
           cross build --release --target ${{ matrix.target }} --features ${{ matrix.curve }}
           mkdir release
@@ -84,6 +85,7 @@ jobs:
       - name: Install dependencies
         run: make deps
       - name: cross build
+        working-directory: ./sdk
         run: |
           cross build --release --target ${{ matrix.target }} --features ${{ matrix.curve }}
           mkdir release

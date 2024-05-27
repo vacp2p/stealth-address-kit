@@ -16,7 +16,7 @@ Uses the [arkworks-rs](https://github.com/arkworks-rs/curves) suite of libraries
 ## Usage
 
 ```rust
-use stealth_address_kit::{StealthAddressOnCurve};
+use stealth_address_kit::StealthAddressOnCurve;
 use ark_bn254::Bn254; // or ark_bls_12_381::Bls12_381 or ark_bls_12_377::Bls12_377, stealth_address_kit::Secp256k1, stealth_address_kit::Secp256r1, etc
 
 fn main() {
@@ -34,7 +34,7 @@ fn main() {
         panic!("View tags did not match");
     }
 
-    let derived_stealth_address = Bn254::derive_public_key(stealth_private_key_opt.unwrap());
+    let derived_stealth_address = Bn254::derive_public_key(&stealth_private_key_opt.unwrap());
     assert_eq!(derived_stealth_address, stealth_address);
 }
 ```
@@ -45,7 +45,7 @@ fn main() {
 2. Create a new module in the `src` directory, with the curve name, suffixed by `_impl.rs`
 3. Implement the `StealthAddressOnCurve` trait for the curve
 4. Define the macro `define_curve_ffi`
-5. Add the curve to the `lib.rs` file, in the `mod` declaration
+5. Add the curve to the `lib.rs` file, in the `mod` declaration, as well as re-export if required
 6. Add the curve to the README
 7. Add the curve to the nightly release workflow
 

@@ -1805,6 +1805,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "stealth_address_kit_example"
+version = "0.1.0"
+dependencies = [
+ "stealth_address_kit",
+]
+
+[[package]]
 name = "subtle"
 version = "2.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"

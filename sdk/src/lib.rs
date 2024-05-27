@@ -20,3 +20,13 @@ mod vesta_impl;
 
 #[cfg(feature = "ffi")]
 mod ffi;
+
+#[cfg(feature = "pallas")]
+pub use pallas_impl::Pallas;
+#[cfg(feature = "secp256k1")]
+pub use secp256k1_impl::Secp256k1;
+#[cfg(feature = "secp256r1")]
+pub use secp256r1_impl::Secp256r1;
+pub use stealth_addresses::StealthAddressOnCurve;
+#[cfg(feature = "vesta")]
+pub use vesta_impl::Vesta;

@@ -1,0 +1,51 @@
+[package]
+name = "stealth_address_kit"
+version = "0.1.0"
+edition = "2021"
+description = "Stealth Address Kit: A Rust library for generating stealth addresses."
+license = "MIT"
+homepage = "https://vac.dev"
+
+[lib]
+name = "stealth_address_kit"
+path = "src/lib.rs"
+crate-type = ["staticlib", "rlib"]
+
+[features]
+ffi = []
+bls12_381 = []
+bls12_377 = []
+secp256k1 = []
+secp256r1 = []
+bn254 = []
+pallas = []
+vesta = []
+bw6_761 = []
+default = ["secp256k1", "ffi"]
+all = ["ffi", "secp256k1", "bls12_381", "bls12_377", "bn254", "secp256r1", "pallas", "vesta", "bw6_761"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+rln = "0.3.4"
+ark-std = "0.4.0"
+num-bigint = "0.4.3"
+num-traits = "0.2.15"
+ark-ff = "0.4.1"
+ark-bn254 = "0.4.0"
+ark-bls12-381 = "0.4.0"
+ark-bls12-377 = "0.4.0"
+ark-secp256k1 = "0.4.0"
+ark-secp256r1 = "0.4.0"
+ark-pallas = "0.4.0"
+ark-vesta = "0.4.0"
+ark-bw6-761 = "0.4.0"
+tiny-keccak = { version = "=2.0.2", features = ["keccak"] }
+ark-ec = "0.4.1"
+ark-serialize = "0.4.1"
+cfg-if = "1.0.0"
+paste = "1.0.0"
+
+[dev-dependencies]
+serde_json = "1.0.96"
+color-eyre = "0.6.2"
