@@ -26,7 +26,7 @@ fn main() {
     // generate ephemeral keypair
     let (ephemeral_private_key, ephemeral_public_key) = Bn254::random_keypair();
 
-    let (stealth_commitment, view_tag) = Bn254::generate_stealth_commitment(viewing_public_key, spending_public_key, ephemeral_private_key);
+    let (stealth_address, view_tag) = Bn254::generate_stealth_address(viewing_public_key, spending_public_key, ephemeral_private_key);
 
     let stealth_private_key_opt = Bn254::generate_stealth_private_key(ephemeral_public_key, viewing_key, spending_key, view_tag);
 
@@ -34,8 +34,8 @@ fn main() {
         panic!("View tags did not match");
     }
 
-    let derived_commitment = Bn254::derive_public_key(stealth_private_key_opt.unwrap());
-    assert_eq!(derived_commitment, stealth_commitment);
+    let derived_stealth_address = Bn254::derive_public_key(stealth_private_key_opt.unwrap());
+    assert_eq!(derived_stealth_address, stealth_address);
 }
 ```
 

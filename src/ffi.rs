@@ -52,8 +52,8 @@ macro_rules! define_curve_ffi {
 
             #[repr(C)]
             #[derive(Debug)]
-            pub struct [<$curve_name _StealthCommitment>] {
-                stealth_commitment: [<$curve_name _G1Projective>],
+            pub struct [<$curve_name _StealthAddress>] {
+                stealth_address: [<$curve_name _G1Projective>],
                 view_tag: u64,
             }
 
@@ -158,30 +158,30 @@ macro_rules! define_curve_ffi {
                 }
             }
 
-            impl [<$curve_name _StealthCommitment>] {
+            impl [<$curve_name _StealthAddress>] {
                 pub fn zero() -> Self {
-                    [<$curve_name _StealthCommitment>] {
-                        stealth_commitment: [<$curve_name _G1Projective>]::zero(),
+                    [<$curve_name _StealthAddress>] {
+                        stealth_address: [<$curve_name _G1Projective>]::zero(),
                         view_tag: 0,
                     }
                 }
             }
 
-            impl TryFrom<($G1Projective, u64)> for [<$curve_name _StealthCommitment>] {
+            impl TryFrom<($G1Projective, u64)> for [<$curve_name _StealthAddress>] {
                 type Error = SerializationError;
 
                 fn try_from(value: ($G1Projective, u64)) -> Result<Self, Self::Error> {
-                    Ok([<$curve_name _StealthCommitment>] {
-                        stealth_commitment: <[<$curve_name _G1Projective>]>::try_from(value.0)?,
+                    Ok([<$curve_name _StealthAddress>] {
+                        stealth_address: <[<$curve_name _G1Projective>]>::try_from(value.0)?,
                         view_tag: value.1,
                     })
                 }
             }
 
-            impl TryInto<($G1Projective, u64)> for [<$curve_name _StealthCommitment>] {
+            impl TryInto<($G1Projective, u64)> for [<$curve_name _StealthAddress>] {
                 type Error = SerializationError;
                 fn try_into(self) -> Result<($G1Projective, u64), Self::Error> {
-                    Ok((self.stealth_commitment.try_into()?, self.view_tag))
+                    Ok((self.stealth_address.try_into()?, self.view_tag))
                 }
             }
             #[no_mangle]
@@ -295,15 +295,15 @@ macro_rules! define_curve_ffi {
             }
 
             #[no_mangle]
-            pub extern "C" fn [<$curve_name _ffi_generate_stealth_commitment>](
+            pub extern "C" fn [<$curve_name _ffi_generate_stealth_address>](
                 viewing_public_key: *mut [<$curve_name _G1Projective>],
                 spending_public_key: *mut [<$curve_name _G1Projective>],
                 ephemeral_private_key: *mut [<$curve_name _Fr>],
-            ) -> *mut CReturn<[<$curve_name _StealthCommitment>]> {
+            ) -> *mut CReturn<[<$curve_name _StealthAddress>]> {
                 let viewing_public_key = unsafe {
                     if viewing_public_key.is_null() {
                         return Box::into_raw(Box::new(CReturn {
-                            value: [<$curve_name _StealthCommitment>]::zero(),
+                            value: [<$curve_name _StealthAddress>]::zero(),
                             err_code: CErrorCode::InvalidKeys,
                         }));
                     }
@@ -312,7 +312,7 @@ macro_rules! define_curve_ffi {
                 let spending_public_key = unsafe {
                     if spending_public_key.is_null() {
                         return Box::into_raw(Box::new(CReturn {
-                            value: [<$curve_name _StealthCommitment>]::zero(),
+                            value: [<$curve_name _StealthAddress>]::zero(),
                             err_code: CErrorCode::InvalidKeys,
                         }));
                     }
@@ -321,7 +321,7 @@ macro_rules! define_curve_ffi {
                 let ephemeral_private_key = unsafe {
                     if ephemeral_private_key.is_null() {
                         return Box::into_raw(Box::new(CReturn {
-                            value: [<$curve_name _StealthCommitment>]::zero(),
+                            value: [<$curve_name _StealthAddress>]::zero(),
                             err_code: CErrorCode::InvalidKeys,
                         }));
                     }
@@ -332,7 +332,7 @@ macro_rules! define_curve_ffi {
                     Ok(v) => v,
                     Err(_) => {
                         return Box::into_raw(Box::new(CReturn {
-                            value: [<$curve_name _StealthCommitment>]::zero(),
+                            value: [<$curve_name _StealthAddress>]::zero(),
                             err_code: CErrorCode::InvalidKeys,
                         }))
                     }
@@ -341,7 +341,7 @@ macro_rules! define_curve_ffi {
                     Ok(v) => v,
                     Err(_) => {
                         return Box::into_raw(Box::new(CReturn {
-                            value: [<$curve_name _StealthCommitment>]::zero(),
+                            value: [<$curve_name _StealthAddress>]::zero(),
                             err_code: CErrorCode::InvalidKeys,
                         }))
                     }
@@ -350,12 +350,12 @@ macro_rules! define_curve_ffi {
                     Ok(v) => v,
                     Err(_) => {
                         return Box::into_raw(Box::new(CReturn {
-                            value: [<$curve_name _StealthCommitment>]::zero(),
+                            value: [<$curve_name _StealthAddress>]::zero(),
                             err_code: CErrorCode::InvalidKeys,
                         }))
                     }
                 };
-                let res = match [<$curve_name _StealthCommitment>]::try_from(<$Curve>::generate_stealth_commitment(
+                let res = match [<$curve_name _StealthAddress>]::try_from(<$Curve>::generate_stealth_address(
                     viewing_public_key,
                     spending_public_key,
                     ephemeral_private_key,
@@ -366,7 +366,7 @@ macro_rules! define_curve_ffi {
                     },
                     Err(err) => {
                         return Box::into_raw(Box::new(CReturn {
-                            value: [<$curve_name _StealthCommitment>]::zero(),
+                            value: [<$curve_name _StealthAddress>]::zero(),
                             err_code: err.into(),
                         }))
                     }
@@ -375,7 +375,7 @@ macro_rules! define_curve_ffi {
             }
 
             #[no_mangle]
-            pub extern "C" fn [<drop_ $curve_name _ffi_generate_stealth_commitment>](ptr: *mut CReturn<[<$curve_name _StealthCommitment>]>) {
+            pub extern "C" fn [<drop_ $curve_name _ffi_generate_stealth_address>](ptr: *mut CReturn<[<$curve_name _StealthAddress>]>) {
                 if ptr.is_null() {
                     return;
                 }
@@ -491,12 +491,12 @@ macro_rules! define_curve_ffi {
                 use ark_ec::CurveGroup;
 
                 #[test]
-                fn [<test_ $curve_name _ffi_generate_random_fr>]() {
+                fn generate_random_fr_happy_path() {
                     let _ = [<$curve_name _ffi_generate_random_fr>]();
                 }
 
                 #[test]
-                fn [<test_ $curve_name _ffi_random_keypair>]() {
+                fn random_keypair_happy_path() {
                     // Generate a random keypair
                     let keypair_raw = [<$curve_name _ffi_random_keypair>]();
                     let keypair = unsafe { &*keypair_raw };
@@ -516,7 +516,7 @@ macro_rules! define_curve_ffi {
                 }
 
                 #[test]
-                fn test_ffi_generate_stealth_commitment() {
+                fn generate_stealth_address_happy_path() {
                     // Generate random keypairs
                     let spending_key_raw = [<$curve_name _ffi_random_keypair>]();
                     let spending_key = unsafe { &mut *spending_key_raw };
@@ -533,14 +533,14 @@ macro_rules! define_curve_ffi {
                     let ephemeral_pub_key_ptr = &mut ephemeral_key.value.public_key;
                     let ephemeral_priv_key_ptr = &mut ephemeral_key.value.private_key;
 
-                    // Generate stealth commitment payload
-                    let stealth_commitment_payload_raw = [<$curve_name _ffi_generate_stealth_commitment>](
+                    // Generate stealth address payload
+                    let stealth_address_payload_raw = [<$curve_name _ffi_generate_stealth_address>](
                         viewing_pub_key_ptr,
                         spending_pub_key_ptr,
                         ephemeral_priv_key_ptr,
                     );
-                    let stealth_commitment_payload = unsafe { &mut *stealth_commitment_payload_raw };
-                    let view_tag_ptr = &mut stealth_commitment_payload.value.view_tag;
+                    let stealth_address_payload = unsafe { &mut *stealth_address_payload_raw };
+                    let view_tag_ptr = &mut stealth_address_payload.value.view_tag;
 
                     // Generate stealth private key
                     let stealth_private_key_raw = [<$curve_name _ffi_generate_stealth_private_key>](
@@ -560,19 +560,19 @@ macro_rules! define_curve_ffi {
                         panic!("View tags did not match");
                     }
 
-                    // Derive commitment
-                    let derived_commitment_raw = [<$curve_name _ffi_derive_public_key>](&mut stealth_private_key.value);
+                    // Derive address
+                    let derived_address_raw = [<$curve_name _ffi_derive_public_key>](&mut stealth_private_key.value);
                     [<drop_ $curve_name _ffi_generate_stealth_private_key>](stealth_private_key_raw);
 
-                    let derived_commitment = unsafe { &*derived_commitment_raw };
+                    let derived_address = unsafe { &*derived_address_raw };
 
                     assert_eq!(
-                        derived_commitment.value,
-                        stealth_commitment_payload.value.stealth_commitment
+                        derived_address.value,
+                        stealth_address_payload.value.stealth_address
                     );
                     // Drop all allocated memory to avoid memory leaks
-                     [<drop_ $curve_name _ffi_generate_stealth_commitment>](stealth_commitment_payload_raw);
-                     [<drop_ $curve_name _ffi_derive_public_key>](derived_commitment_raw);
+                     [<drop_ $curve_name _ffi_generate_stealth_address>](stealth_address_payload_raw);
+                     [<drop_ $curve_name _ffi_derive_public_key>](derived_address_raw);
                 }
             }
 

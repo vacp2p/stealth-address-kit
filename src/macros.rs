@@ -7,14 +7,14 @@ macro_rules! define_curve_tests {
             use ark_ec::CurveGroup;
 
             #[test]
-            fn test_random_keypair() {
+            fn random_keypair_happy_path() {
                 let (key, pub_key) = <$Curve>::random_keypair();
                 // Check the derived key matches the one generated from original key
                 assert_eq!(<$Curve>::derive_public_key(&key), pub_key);
             }
 
             #[test]
-            fn test_hash_to_fr() {
+            fn hash_to_fr_happy_path() {
                 // Test that hash_to_fr(input_1) != hash_to_fr(input_2) when input_1 != input_2
                 let input_1 = b"input_1";
                 let input_2 = b"input_2";
@@ -22,7 +22,7 @@ macro_rules! define_curve_tests {
             }
 
             #[test]
-            fn test_compute_shared_point() {
+            fn compute_shared_point_happy_path() {
                 // In a multiple participant scenario, any participant's public key
                 // combined with any other participant's private key should arrive at the same shared key
                 let (key1, pub_key1) = <$Curve>::random_keypair();
@@ -40,14 +40,14 @@ macro_rules! define_curve_tests {
             }
 
             #[test]
-            fn test_stealth_commitment_generation() {
+            fn generate_stealth_address_happy_path() {
                 let (spending_key, spending_public_key) = <$Curve>::random_keypair();
                 let (viewing_key, viewing_public_key) = <$Curve>::random_keypair();
 
                 // generate ephemeral keypair
                 let (ephemeral_private_key, ephemeral_public_key) = <$Curve>::random_keypair();
 
-                let (stealth_commitment, view_tag) = <$Curve>::generate_stealth_commitment(
+                let (stealth_address, view_tag) = <$Curve>::generate_stealth_address(
                     viewing_public_key,
                     spending_public_key,
                     ephemeral_private_key,
@@ -64,9 +64,9 @@ macro_rules! define_curve_tests {
                     panic!("View tags did not match");
                 }
 
-                let derived_commitment =
+                let derived_address =
                     <$Curve>::derive_public_key(&stealth_private_key_opt.unwrap());
-                assert_eq!(derived_commitment, stealth_commitment);
+                assert_eq!(derived_address, stealth_address);
             }
         }
     };

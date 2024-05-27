@@ -1,4 +1,4 @@
-use crate::stealth_commitments::StealthAddressOnCurve;
+use crate::stealth_addresses::StealthAddressOnCurve;
 use crate::{define_curve_ffi, define_curve_tests};
 
 use ark_bls12_377::{Bls12_377, Fr, G1Projective};

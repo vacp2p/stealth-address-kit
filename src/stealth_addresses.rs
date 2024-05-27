@@ -31,7 +31,7 @@ where
     fn to_bytes(&self) -> Vec<u8> {
         let affine = self.into_affine();
         let mut bytes = Vec::new();
-        affine.serialize_uncompressed(&mut bytes).unwrap();
+        affine.serialize_compressed(&mut bytes).unwrap();
         bytes
     }
 }
@@ -73,7 +73,7 @@ pub trait StealthAddressOnCurve {
         public_key * private_key
     }
 
-    fn generate_stealth_commitment(
+    fn generate_stealth_address(
         viewing_public_key: Self::Projective,
         spending_public_key: Self::Projective,
         ephemeral_private_key: Self::Fr,

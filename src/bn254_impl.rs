@@ -1,4 +1,4 @@
-use crate::stealth_commitments::StealthAddressOnCurve;
+use crate::stealth_addresses::StealthAddressOnCurve;
 use crate::{define_curve_ffi, define_curve_tests};
 use ark_bn254::{Bn254, Fr, G1Projective};
 #[allow(unused_imports)]
@@ -45,21 +45,20 @@ mod rln_tests {
 
         // now the application sees that a user has been inserted into the tree
         let mut rln_app_tree = RLN::new(test_tree_height, resources)?;
-        // the application generates a stealth commitment for alice
+        // the application generates a stealth address for alice
         let (ephemeral_private_key, ephemeral_public_key) = Curve::random_keypair();
-        let (alice_stealth_commitment, view_tag) = Curve::generate_stealth_commitment(
+        let (alice_stealth_address, view_tag) = Curve::generate_stealth_address(
             alice_known_spending_pk,
             alice_known_spending_pk,
             ephemeral_private_key,
         );
 
-        let parts = [alice_stealth_commitment.x, alice_stealth_commitment.y];
+        let parts = [alice_stealth_address.x, alice_stealth_address.y];
         let fr_parts = parts.map(|x| Fr::from(x.0));
-        let alice_stealth_commitment_buffer =
-            Cursor::new(fr_to_bytes_le(&poseidon_hash(&fr_parts)));
-        rln_app_tree.set_leaf(0, alice_stealth_commitment_buffer)?;
+        let alice_stealth_address_buffer = Cursor::new(fr_to_bytes_le(&poseidon_hash(&fr_parts)));
+        rln_app_tree.set_leaf(0, alice_stealth_address_buffer)?;
 
-        // now alice's stealth commitment has been inserted into the tree, but alice has not
+        // now alice's stealth address has been inserted into the tree, but alice has not
         // yet derived the secret for it -
         let alice_stealth_private_key_opt = Curve::generate_stealth_private_key(
             ephemeral_public_key,
@@ -74,11 +73,11 @@ mod rln_tests {
 
         assert_eq!(
             Curve::derive_public_key(&alice_stealth_private_key),
-            alice_stealth_commitment
+            alice_stealth_address
         );
 
-        // now alice may generate valid rln proofs for the rln app tree, using a commitment
-        // derived from her commitment on the other tree
+        // now alice may generate valid rln proofs for the rln app tree, using a address
+        // derived from her address on the other tree
         Ok(())
     }
 }
