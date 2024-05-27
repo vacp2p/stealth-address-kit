@@ -27,7 +27,6 @@ all = ["ffi", "secp256k1", "bls12_381", "bls12_377", "bn254", "secp256r1", "pall
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-rln = "0.3.4"
 ark-std = "0.4.0"
 num-bigint = "0.4.3"
 num-traits = "0.2.15"
@@ -41,10 +40,11 @@ ark-pallas = "0.4.0"
 ark-vesta = "0.4.0"
 ark-bw6-761 = "0.4.0"
 tiny-keccak = { version = "=2.0.2", features = ["keccak"] }
-ark-ec = "0.4.1"
-ark-serialize = "0.4.1"
+ark-ec = "0.4.2"
+ark-serialize = "0.4.2"
 cfg-if = "1.0.0"
 paste = "1.0.0"
+rand = { version = "0.8.5", features = ["getrandom"] }
 
 [dev-dependencies]
 serde_json = "1.0.96"
