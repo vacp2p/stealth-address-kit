@@ -1,6 +1,6 @@
 # stealth-address-kit
 
-Uses the [arkworks-rs](https://github.com/arkworks-rs/curves) suite of libraries, and utilities from [rln](https://github.com/vacp2p/zerokit)
+Uses the [arkworks-rs](https://github.com/arkworks-rs/curves) suite of libraries.
 
 ## Existing Implementations
 
@@ -67,5 +67,4 @@ Check out the nightly releases.
 
 ## Attribution
 
-- The original circuits for rln are located [here](https://github.com/Rate-Limting-Nullifier/circom-rln), by the PSE group
 - Inspired by the [erc-5564](https://eips.ethereum.org/EIPS/eip-5564) eip and the [poc](https://github.com/nerolation/EIP-Stealth-Address-ERC/blob/main/minimal_poc.ipynb) by Nerolation.
