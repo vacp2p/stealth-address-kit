@@ -93,6 +93,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "ark-ed-on-bn254"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "71892f265d01650e34988a546b37ea1d2ba1da162a639597a03d1550f26004d8"
+dependencies = [
+ "ark-bn254",
+ "ark-ec",
+ "ark-ff",
+ "ark-std",
+]
+
+[[package]]
 name = "ark-ff"
 version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -613,6 +625,7 @@ dependencies = [
  "ark-bn254",
  "ark-bw6-761",
  "ark-ec",
+ "ark-ed-on-bn254",
  "ark-ff",
  "ark-pallas",
  "ark-secp256k1",

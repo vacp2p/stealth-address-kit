@@ -21,6 +21,7 @@ bn254 = ["dep:ark-bn254"]
 pallas = ["dep:ark-pallas"]
 vesta = ["dep:ark-vesta"]
 bw6_761 = ["dep:ark-bw6-761"]
+baby_jub_jub = ["dep:ark-ed-on-bn254"]
 default = ["secp256k1", "ffi"]
 all = ["ffi", "secp256k1", "bls12_381", "bls12_377", "bn254", "secp256r1", "pallas", "vesta", "bw6_761"]
 
@@ -39,6 +40,7 @@ ark-pallas = { version = "0.4.0", optional = true }
 ark-vesta = { version = "0.4.0", optional = true }
 ark-bw6-761 = { version = "0.4.0", optional = true }
 tiny-keccak = { version = "=2.0.2", features = ["keccak"] }
+ark-ed-on-bn254 = { version = "0.4.0", optional = true }
 ark-ec = "0.4.2"
 ark-serialize = "0.4.2"
 paste = { version = "1.0.0", optional = true }
