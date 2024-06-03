@@ -12,6 +12,7 @@ Uses the [arkworks-rs](https://github.com/arkworks-rs/curves) suite of libraries
 6. `pallas`
 7. `vesta`
 8. `bw6_761`
+9. `baby_jub_jub`
 
 ## Usage
 

@@ -1,6 +1,8 @@
 mod macros;
 mod stealth_addresses;
 
+#[cfg(feature = "baby_jub_jub")]
+mod baby_jub_jub_impl;
 #[cfg(feature = "bls12_377")]
 mod bls12_377_impl;
 #[cfg(feature = "bls12_381")]
@@ -21,6 +23,8 @@ mod vesta_impl;
 #[cfg(feature = "ffi")]
 mod ffi;
 
+#[cfg(feature = "baby_jub_jub")]
+pub use baby_jub_jub_impl::BabyJubJub;
 #[cfg(feature = "pallas")]
 pub use pallas_impl::Pallas;
 #[cfg(feature = "secp256k1")]
