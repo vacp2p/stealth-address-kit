@@ -1,5 +1,5 @@
-use crate::define_curve_tests;
-use crate::stealth_addresses::StealthAddressOnCurve;
+use crate::{define_curve_tests, stealth_addresses::StealthAddressOnCurve};
+/// Implementation of the StealthAddressOnCurve trait for the Secp256r1 curve.
 use ark_secp256r1::{Fr, Projective};
 
 pub struct Secp256r1;

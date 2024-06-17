@@ -1,5 +1,5 @@
-use crate::define_curve_tests;
-use crate::stealth_addresses::StealthAddressOnCurve;
+use crate::{define_curve_tests, stealth_addresses::StealthAddressOnCurve};
+/// Implementation of the StealthAddressOnCurve trait for the Vesta curve.
 use ark_vesta::{Fr, Projective};
 
 pub struct Vesta;
