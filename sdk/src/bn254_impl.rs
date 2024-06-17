@@ -1,5 +1,4 @@
-use crate::define_curve_tests;
-use crate::stealth_addresses::StealthAddressOnCurve;
+use crate::{define_curve_tests, stealth_addresses::StealthAddressOnCurve};
 use ark_bn254::{Bn254, Fr, G1Projective};
 
 impl StealthAddressOnCurve for Bn254 {

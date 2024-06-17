@@ -1,6 +1,5 @@
-use crate::define_curve_tests;
-use crate::stealth_addresses::StealthAddressOnCurve;
-
+use crate::{define_curve_tests, stealth_addresses::StealthAddressOnCurve};
+/// Implementation of the StealthAddressOnCurve trait for the Bls12_381 curve.
 use ark_bls12_381::{Bls12_381, Fr, G1Projective};
 
 impl StealthAddressOnCurve for Bls12_381 {

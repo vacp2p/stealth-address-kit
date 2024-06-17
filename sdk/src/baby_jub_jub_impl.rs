@@ -1,6 +1,5 @@
-use crate::define_curve_tests;
-use crate::stealth_addresses::StealthAddressOnCurve;
-
+use crate::{define_curve_tests, stealth_addresses::StealthAddressOnCurve};
+/// Implementation of the StealthAddressOnCurve trait for the BabyJubJub curve.
 use ark_ed_on_bn254::{EdwardsProjective, Fr};
 
 pub struct BabyJubJub;

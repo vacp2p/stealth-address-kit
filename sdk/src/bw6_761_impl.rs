@@ -1,6 +1,5 @@
-use crate::define_curve_tests;
-use crate::stealth_addresses::StealthAddressOnCurve;
-
+use crate::{define_curve_tests, stealth_addresses::StealthAddressOnCurve};
+/// Implementation of the StealthAddressOnCurve trait for the BW6_761 curve.
 use ark_bw6_761::{Fr, G1Projective, BW6_761};
 
 impl StealthAddressOnCurve for BW6_761 {

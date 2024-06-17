@@ -1,5 +1,5 @@
-use crate::define_curve_tests;
-use crate::stealth_addresses::StealthAddressOnCurve;
+use crate::{define_curve_tests, stealth_addresses::StealthAddressOnCurve};
+/// Implementation of the StealthAddressOnCurve trait for the Pallas curve.
 use ark_pallas::{Fr, Projective};
 
 pub struct Pallas;
