@@ -5,3 +5,8 @@ members = [
     "example"
 ]
 resolver = "2"
+
+[profile.release]
+opt-level = "z" # Optimize for size
+lto = true # Enable Link Time Optimization
+codegen-units = 1 # Reduce codegen units for better optimization

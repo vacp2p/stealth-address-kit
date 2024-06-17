@@ -5,4 +5,4 @@ deps:
 clean:
 	@cargo clean
 example:
-	@cargo run -p stealth_address_kit_example
+	@cargo run --release -p stealth_address_kit_example
