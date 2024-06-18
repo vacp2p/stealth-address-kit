@@ -618,7 +618,7 @@ dependencies = [
 
 [[package]]
 name = "stealth_address_kit"
-version = "0.2.0-beta"
+version = "0.2.0"
 dependencies = [
  "ark-bls12-377",
  "ark-bls12-381",
