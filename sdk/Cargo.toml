@@ -11,6 +11,10 @@ name = "stealth_address_kit"
 path = "src/lib.rs"
 crate-type = ["staticlib", "rlib"]
 
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
+
 [features]
 ffi = ["dep:paste"]
 bls12_381 = ["dep:ark-bls12-381"]
