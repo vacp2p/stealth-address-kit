@@ -58,6 +58,7 @@ pub trait StealthAddressOnCurve {
     /// # Returns
     ///
     /// The derived public key.
+    #[inline]
     fn derive_public_key(private_key: &Self::Fr) -> Self::Projective {
         Self::Projective::generator() * *private_key
     }
@@ -67,6 +68,7 @@ pub trait StealthAddressOnCurve {
     /// # Returns
     ///
     /// A tuple containing the private key and the derived public key.
+    #[inline]
     fn random_keypair() -> (Self::Fr, Self::Projective) {
         let private_key = Self::generate_random_fr();
         let public_key = Self::derive_public_key(&private_key);
@@ -78,6 +80,7 @@ pub trait StealthAddressOnCurve {
     /// # Returns
     ///
     /// A random scalar field element.
+    #[inline]
     fn generate_random_fr() -> Self::Fr {
         Self::Fr::rand(&mut OsRng)
     }
@@ -91,6 +94,7 @@ pub trait StealthAddressOnCurve {
     /// # Returns
     ///
     /// A scalar field element derived from the hash of the input.
+    #[inline]
     fn hash_to_fr(input: &[u8]) -> Self::Fr {
         let mut hash = [0; 32];
         let mut hasher = Keccak::v256();
@@ -111,6 +115,7 @@ pub trait StealthAddressOnCurve {
     /// # Returns
     ///
     /// The computed shared elliptic curve point.
+    #[inline]
     fn compute_shared_point(
         private_key: Self::Fr,
         public_key: Self::Projective,
@@ -129,6 +134,7 @@ pub trait StealthAddressOnCurve {
     /// # Returns
     ///
     /// A tuple containing the stealth address and the view tag.
+    #[inline]
     fn generate_stealth_address(
         viewing_public_key: Self::Projective,
         spending_public_key: Self::Projective,
@@ -153,6 +159,7 @@ pub trait StealthAddressOnCurve {
     /// # Returns
     ///
     /// An optional stealth private key.
+    #[inline]
     fn generate_stealth_private_key(
         ephemeral_public_key: Self::Projective,
         viewing_key: Self::Fr,

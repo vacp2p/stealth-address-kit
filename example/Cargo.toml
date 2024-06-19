@@ -9,4 +9,4 @@ homepage = "https://vac.dev"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-stealth_address_kit = { path = "../sdk", default-features = false, features = ["secp256r1"] }
+stealth_address_kit = { path = "../sdk", default-features = false, features = ["secp256k1"] }

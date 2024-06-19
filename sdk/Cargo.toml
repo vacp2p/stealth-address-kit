@@ -53,3 +53,8 @@ rand = { version = "0.8.5", features = ["getrandom"] }
 [dev-dependencies]
 serde_json = "1.0.96"
 color-eyre = "0.6.2"
+criterion = { version = "=0.4.0", features = ["html_reports"] }
+
+[[bench]]
+name = "benches"
+harness = false
