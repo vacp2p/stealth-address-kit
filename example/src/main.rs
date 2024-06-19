@@ -1,7 +1,5 @@
-use stealth_address_kit::Secp256r1;
+use stealth_address_kit::Secp256k1 as Curve;
 use stealth_address_kit::StealthAddressOnCurve;
-
-type Curve = Secp256r1;
 
 fn print_discriminator() {
     println!("{}", "+".repeat(100));

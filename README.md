@@ -16,6 +16,10 @@ The following curves are currently supported:
 8. `bw6_761`
 9. `baby_jub_jub`
 
+## Benchmarks
+
+See the [benchmarks](./benchmarks/report/index.html) for performance comparisons across supported curves.
+
 ## Usage Example
 
 Below is an example demonstrating how to use the Stealth Address Kit with the `ark_bn254` curve:
@@ -55,6 +59,7 @@ To add support for a new curve, follow these steps:
 5. Add the curve to the `lib.rs` file in the `mod` declaration, and re-export if required.
 6. Update the README to include the new curve.
 7. Add the curve to the nightly release workflow.
+8. Add the curve to the benchmarks.
 
 ## Building and Testing
 
@@ -73,6 +78,16 @@ To run tests, use the following command:
 ```sh
 cargo test --release --features <bn254/bls12_381/bls12_377/secp256k1/secp256r1/etc>
 ```
+
+### Benchmarks
+
+To run benchmarks, use the following command:
+
+```sh
+make bench
+```
+
+This will run benchmarks for all supported curves, and output the results to the `benchmarks` directory.
 
 ## FFI API
 

@@ -16,7 +16,7 @@ fn criterion_benchmark(c: &mut Criterion) {
     }
     #[cfg(feature = "bn254")]
     {
-        use stealth_address_kit::Bn254;
+        use ark_bn254::Bn254;
         define_curve_benchmarks!(Bn254, c);
     }
     #[cfg(feature = "bls12_381")]
@@ -46,7 +46,7 @@ fn criterion_benchmark(c: &mut Criterion) {
     }
     #[cfg(feature = "bw6_761")]
     {
-        use stealth_address_kit::BW6_761;
+        use ark_bw6_761::BW6_761;
         define_curve_benchmarks!(BW6_761, c);
     }
 }
@@ -55,63 +55,63 @@ fn criterion_benchmark(c: &mut Criterion) {
 macro_rules! define_curve_benchmarks {
     ($Curve:ty, $c:ty) => {
         paste! {
-                let [<$Curve:lower _random_keypair>] = <$Curve>::random_keypair();
-                let [<$Curve:lower _stringified>] = stringify!([<$Curve:lower>]);
+            let [<$Curve:lower _random_keypair>] = <$Curve>::random_keypair();
+            let mut group = $c.benchmark_group(stringify!([<$Curve:lower>]));
 
-                $c.bench_function(&format!("{}_derive_public_key", [<$Curve:lower _stringified>]), |b| {
-                    b.iter(|| {
-                        let _ = <$Curve>::derive_public_key(&[<$Curve:lower _random_keypair>].0);
-                    })
-                });
+            group.bench_function("derive_public_key", |b| {
+                b.iter(|| {
+                    let _ = <$Curve>::derive_public_key(&[<$Curve:lower _random_keypair>].0);
+                })
+            });
 
-                $c.bench_function(&format!("{}_random_keypair", [<$Curve:lower _stringified>]), |b| {
-                    b.iter(|| {
-                        let _ = <$Curve>::random_keypair();
-                    })
-                });
+            group.bench_function("random_keypair", |b| {
+                b.iter(|| {
+                    let _ = <$Curve>::random_keypair();
+                })
+            });
 
-                $c.bench_function(&format!("{}_generate_random_fr", [<$Curve:lower _stringified>]), |b| {
-                    b.iter(|| {
-                        let _ = <$Curve>::generate_random_fr();
-                    })
-                });
+            group.bench_function("generate_random_fr", |b| {
+                b.iter(|| {
+                    let _ = <$Curve>::generate_random_fr();
+                })
+            });
 
-                let random_u8_slice = [0u8; 32];
+            let random_u8_slice = [0u8; 32];
 
-                $c.bench_function(&format!("{}_hash_to_fr", [<$Curve:lower _stringified>]), |b| {
-                    b.iter(|| {
-                        let _ = <$Curve>::hash_to_fr(&random_u8_slice);
-                    })
-                });
+            group.bench_function("hash_to_fr", |b| {
+                b.iter(|| {
+                    let _ = <$Curve>::hash_to_fr(&random_u8_slice);
+                })
+            });
 
-                $c.bench_function(&format!("{}_compute_shared_point", [<$Curve:lower _stringified>]), |b| {
-                    b.iter(|| {
-                        let _ = <$Curve>::compute_shared_point([<$Curve:lower _random_keypair>].0, [<$Curve:lower _random_keypair>].1);
-                    })
-                });
+            group.bench_function("compute_shared_point", |b| {
+                b.iter(|| {
+                    let _ = <$Curve>::compute_shared_point([<$Curve:lower _random_keypair>].0, [<$Curve:lower _random_keypair>].1);
+                })
+            });
 
-                let [<$Curve:lower _random_keypair_2>] = <$Curve>::random_keypair();
+            let [<$Curve:lower _random_keypair_2>] = <$Curve>::random_keypair();
 
-                $c.bench_function(&format!("{}_generate_stealth_address", [<$Curve:lower _stringified>]), |b| {
-                    b.iter(|| {
-                        let _ = <$Curve>::generate_stealth_address(
-                            [<$Curve:lower _random_keypair>].1,
-                            [<$Curve:lower _random_keypair_2>].1,
-                            [<$Curve:lower _random_keypair>].0,
-                        );
-                    })
-                });
+            group.bench_function("generate_stealth_address", |b| {
+                b.iter(|| {
+                    let _ = <$Curve>::generate_stealth_address(
+                        [<$Curve:lower _random_keypair>].1,
+                        [<$Curve:lower _random_keypair_2>].1,
+                        [<$Curve:lower _random_keypair>].0,
+                    );
+                })
+            });
 
-                $c.bench_function(&format!("{}_generate_stealth_private_key", [<$Curve:lower _stringified>]), |b| {
-                    b.iter(|| {
-                        let _ = <$Curve>::generate_stealth_private_key(
-                            [<$Curve:lower _random_keypair>].1,
-                            [<$Curve:lower _random_keypair>].0,
-                            [<$Curve:lower _random_keypair_2>].0,
-                            0,
-                        );
-                    })
-                });
+            group.bench_function("generate_stealth_private_key", |b| {
+                b.iter(|| {
+                    let _ = <$Curve>::generate_stealth_private_key(
+                        [<$Curve:lower _random_keypair>].1,
+                        [<$Curve:lower _random_keypair>].0,
+                        [<$Curve:lower _random_keypair_2>].0,
+                        0,
+                    );
+                })
+            });
         }
     };
 }

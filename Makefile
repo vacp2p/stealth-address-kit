@@ -7,3 +7,7 @@ clean:
 
 example:
 	@cargo run --release -p stealth_address_kit_example
+
+bench:
+	@cargo bench --all-features
+	cp -r target/criterion/** benchmarks/
