@@ -112,6 +112,8 @@ macro_rules! define_curve_benchmarks {
                     );
                 })
             });
+
+            group.finish();
         }
     };
 }
