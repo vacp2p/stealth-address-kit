@@ -1,10 +1,10 @@
-use ark_ec::{CurveGroup, Group};
+use ark_ec::{AffineRepr, CurveGroup, Group};
 use ark_ff::{Fp, FpConfig, PrimeField};
 use ark_serialize::CanonicalSerialize;
 use ark_std::rand::rngs::OsRng;
 use ark_std::UniformRand;
 use std::fmt::Display;
-use std::ops::{Add, Mul};
+use std::ops::Add;
 use tiny_keccak::{Hasher, Keccak};
 
 /// A trait for types that have a view tag.
@@ -13,7 +13,10 @@ pub trait HasViewTag {
     fn get_view_tag(&self) -> u64;
 }
 
-impl<P: FpConfig<N>, const N: usize> HasViewTag for Fp<P, N> {
+impl<P: FpConfig<N>, const N: usize> HasViewTag for Fp<P, N>
+where
+    Fp<P, N>: PrimeField,
+{
     fn get_view_tag(&self) -> u64 {
         self.0 .0[0]
     }
@@ -37,17 +40,17 @@ where
     }
 }
 
+// we want to route through CurveGroup -> Config -> ScalarField
+type FrOf<P> =
+    <<<P as StealthAddressOnCurve>::Projective as CurveGroup>::Affine as AffineRepr>::ScalarField;
+
 /// A trait for implementing stealth addresses on elliptic curves.
 pub trait StealthAddressOnCurve {
     /// The projective representation of the elliptic curve point.
     type Projective: Display
         + Add<Output = Self::Projective>
-        + Mul<Self::Fr, Output = Self::Projective>
         + From<<Self::Projective as CurveGroup>::Affine>
         + CurveGroup;
-
-    /// The scalar field of the elliptic curve.
-    type Fr: Add<Self::Fr, Output = Self::Fr> + PrimeField + HasViewTag;
 
     /// Derives a public key from a given private key.
     ///
@@ -59,7 +62,7 @@ pub trait StealthAddressOnCurve {
     ///
     /// The derived public key.
     #[inline]
-    fn derive_public_key(private_key: &Self::Fr) -> Self::Projective {
+    fn derive_public_key(private_key: &FrOf<Self>) -> Self::Projective {
         Self::Projective::generator() * *private_key
     }
 
@@ -69,7 +72,7 @@ pub trait StealthAddressOnCurve {
     ///
     /// A tuple containing the private key and the derived public key.
     #[inline]
-    fn random_keypair() -> (Self::Fr, Self::Projective) {
+    fn random_keypair() -> (FrOf<Self>, Self::Projective) {
         let private_key = Self::generate_random_fr();
         let public_key = Self::derive_public_key(&private_key);
         (private_key, public_key)
@@ -81,8 +84,8 @@ pub trait StealthAddressOnCurve {
     ///
     /// A random scalar field element.
     #[inline]
-    fn generate_random_fr() -> Self::Fr {
-        Self::Fr::rand(&mut OsRng)
+    fn generate_random_fr() -> FrOf<Self> {
+        FrOf::<Self>::rand(&mut OsRng)
     }
 
     /// Hashes an input byte slice to a scalar field element.
@@ -95,14 +98,17 @@ pub trait StealthAddressOnCurve {
     ///
     /// A scalar field element derived from the hash of the input.
     #[inline]
-    fn hash_to_fr(input: &[u8]) -> Self::Fr {
+    fn hash_to_fr(input: &[u8]) -> FrOf<Self>
+    where
+        FrOf<Self>: HasViewTag,
+    {
         let mut hash = [0; 32];
         let mut hasher = Keccak::v256();
         hasher.update(input);
         hasher.finalize(&mut hash);
 
         // We export the hash as a field element
-        Self::Fr::from_le_bytes_mod_order(hash.as_slice())
+        FrOf::<Self>::from_le_bytes_mod_order(hash.as_slice())
     }
 
     /// Computes a shared elliptic curve point given a private key and a public key.
@@ -117,7 +123,7 @@ pub trait StealthAddressOnCurve {
     /// The computed shared elliptic curve point.
     #[inline]
     fn compute_shared_point(
-        private_key: Self::Fr,
+        private_key: FrOf<Self>,
         public_key: Self::Projective,
     ) -> Self::Projective {
         public_key * private_key
@@ -138,8 +144,11 @@ pub trait StealthAddressOnCurve {
     fn generate_stealth_address(
         viewing_public_key: Self::Projective,
         spending_public_key: Self::Projective,
-        ephemeral_private_key: Self::Fr,
-    ) -> (Self::Projective, u64) {
+        ephemeral_private_key: FrOf<Self>,
+    ) -> (Self::Projective, u64)
+    where
+        FrOf<Self>: HasViewTag,
+    {
         let q = Self::compute_shared_point(ephemeral_private_key, viewing_public_key);
         let q_hashed = Self::hash_to_fr(&q.to_bytes());
         let q_hashed_in_g1 = Self::derive_public_key(&q_hashed);
@@ -162,10 +171,13 @@ pub trait StealthAddressOnCurve {
     #[inline]
     fn generate_stealth_private_key(
         ephemeral_public_key: Self::Projective,
-        viewing_key: Self::Fr,
-        spending_key: Self::Fr,
+        viewing_key: FrOf<Self>,
+        spending_key: FrOf<Self>,
         expected_view_tag: u64,
-    ) -> Option<Self::Fr> {
+    ) -> Option<FrOf<Self>>
+    where
+        FrOf<Self>: HasViewTag,
+    {
         let q_receiver = Self::compute_shared_point(viewing_key, ephemeral_public_key);
         let q_receiver_hashed = Self::hash_to_fr(&q_receiver.to_bytes());
         if q_receiver_hashed.get_view_tag() == expected_view_tag {

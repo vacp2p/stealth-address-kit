@@ -6,7 +6,6 @@ pub struct Pallas;
 
 impl StealthAddressOnCurve for Pallas {
     type Projective = Projective;
-    type Fr = Fr;
 }
 
 #[cfg(feature = "ffi")]

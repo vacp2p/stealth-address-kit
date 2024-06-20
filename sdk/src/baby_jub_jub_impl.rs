@@ -6,7 +6,6 @@ pub struct BabyJubJub;
 
 impl StealthAddressOnCurve for BabyJubJub {
     type Projective = EdwardsProjective;
-    type Fr = Fr;
 }
 
 #[cfg(feature = "ffi")]

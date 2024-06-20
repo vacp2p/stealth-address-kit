@@ -6,7 +6,6 @@ pub struct Secp256r1;
 
 impl StealthAddressOnCurve for Secp256r1 {
     type Projective = Projective;
-    type Fr = Fr;
 }
 
 #[cfg(feature = "ffi")]

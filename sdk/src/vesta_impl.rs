@@ -6,7 +6,6 @@ pub struct Vesta;
 
 impl StealthAddressOnCurve for Vesta {
     type Projective = Projective;
-    type Fr = Fr;
 }
 
 #[cfg(feature = "ffi")]

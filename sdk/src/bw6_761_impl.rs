@@ -4,7 +4,6 @@ use ark_bw6_761::{Fr, G1Projective, BW6_761};
 
 impl StealthAddressOnCurve for BW6_761 {
     type Projective = G1Projective;
-    type Fr = Fr;
 }
 
 #[cfg(feature = "ffi")]

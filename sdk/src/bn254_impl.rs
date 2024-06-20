@@ -3,7 +3,6 @@ use ark_bn254::{Bn254, Fr, G1Projective};
 
 impl StealthAddressOnCurve for Bn254 {
     type Projective = G1Projective;
-    type Fr = Fr;
 }
 
 #[cfg(feature = "ffi")]
