@@ -5,6 +5,7 @@ edition = "2021"
 description = "Stealth Address Kit: A Rust library for generating stealth addresses."
 license = "MIT"
 homepage = "https://vac.dev"
+repository = "https://github.com/vacp2p/stealth-address-kit"
 
 [lib]
 name = "stealth_address_kit"
