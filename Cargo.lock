@@ -919,7 +919,7 @@ dependencies = [
 
 [[package]]
 name = "stealth_address_kit"
-version = "0.2.0"
+version = "0.3.1"
 dependencies = [
  "ark-bls12-377",
  "ark-bls12-381",
