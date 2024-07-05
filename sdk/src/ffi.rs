@@ -1,6 +1,6 @@
 #[macro_export]
 macro_rules! define_curve_ffi {
-    ($curve_name:ident, $Curve:ty, $Fr:ty, $G1Projective:ty, $FR_SIZE: expr, $PROJECTIVE_SIZE:expr) => {
+    ($curve_name:ident, $Curve:ty, $Fr:ty, $Projective:ty, $FR_SIZE: expr, $PROJECTIVE_SIZE:expr) => {
         use paste::paste;
         use ark_serialize::{CanonicalDeserialize, CanonicalSerialize, SerializationError};
         use num_traits::Zero;
@@ -37,39 +37,39 @@ macro_rules! define_curve_ffi {
         paste! {
             #[repr(C)]
             #[derive(Debug)]
-            pub struct [<$curve_name _Fr>]([u8; $FR_SIZE]);
+            pub struct [<$curve_name Fr>]([u8; $FR_SIZE]);
 
             #[repr(C)]
             #[derive(Debug, PartialOrd, PartialEq)]
-            pub struct [<$curve_name _G1Projective>]([u8; $PROJECTIVE_SIZE]);
+            pub struct [<$curve_name Projective>]([u8; $PROJECTIVE_SIZE]);
 
             #[repr(C)]
             #[derive(Debug)]
-            pub struct [<$curve_name _KeyPair>] {
-                private_key: [<$curve_name _Fr>],
-                public_key: [<$curve_name _G1Projective>],
+            pub struct [<$curve_name KeyPair>] {
+                private_key: [<$curve_name Fr>],
+                public_key: [<$curve_name Projective>],
             }
 
             #[repr(C)]
             #[derive(Debug)]
-            pub struct [<$curve_name _StealthAddress>] {
-                stealth_address: [<$curve_name _G1Projective>],
+            pub struct [<$curve_name StealthAddress>] {
+                stealth_address: [<$curve_name Projective>],
                 view_tag: u64,
             }
 
-            impl Add for [<$curve_name _Fr>] {
+            impl Add for [<$curve_name Fr>] {
                 type Output = Self;
 
                 fn add(self, rhs: Self) -> Self::Output {
                     let lhs = <$Fr>::try_from(self).unwrap();
                     let rhs = <$Fr>::try_from(rhs).unwrap();
-                    [<$curve_name _Fr>]::try_from(lhs.add(rhs)).unwrap()
+                    [<$curve_name Fr>]::try_from(lhs.add(rhs)).unwrap()
                 }
             }
 
-            impl Zero for [<$curve_name _Fr>] {
+            impl Zero for [<$curve_name Fr>] {
                 fn zero() -> Self {
-                    [<$curve_name _Fr>]::try_from(<$Fr>::try_from(0).unwrap()).unwrap()
+                    [<$curve_name Fr>]::try_from(<$Fr>::try_from(0).unwrap()).unwrap()
                 }
 
                 fn is_zero(&self) -> bool {
@@ -77,7 +77,7 @@ macro_rules! define_curve_ffi {
                 }
             }
 
-            impl TryFrom<$Fr> for [<$curve_name _Fr>] {
+            impl TryFrom<$Fr> for [<$curve_name Fr>] {
                 type Error = SerializationError;
 
                 fn try_from(value: $Fr) -> Result<Self, Self::Error> {
@@ -85,114 +85,114 @@ macro_rules! define_curve_ffi {
                     value.serialize_compressed(&mut buf)?;
                     let mut res = [0u8; $FR_SIZE];
                     res.copy_from_slice(&buf);
-                    Ok([<$curve_name _Fr>](res))
+                    Ok([<$curve_name Fr>](res))
                 }
             }
 
-            impl TryFrom<[<$curve_name _Fr>]> for $Fr {
+            impl TryFrom<[<$curve_name Fr>]> for $Fr {
                 type Error = SerializationError;
 
-                fn try_from(value: [<$curve_name _Fr>]) -> Result<Self, Self::Error> {
+                fn try_from(value: [<$curve_name Fr>]) -> Result<Self, Self::Error> {
                     <$Fr>::deserialize_compressed(value.0.as_slice())
                 }
             }
 
-            impl From<&[<$curve_name _Fr>]> for $Fr {
-                fn from(value: &[<$curve_name _Fr>]) -> Self {
+            impl From<&[<$curve_name Fr>]> for $Fr {
+                fn from(value: &[<$curve_name Fr>]) -> Self {
                     <$Fr>::deserialize_compressed(value.0.as_slice()).unwrap()
                 }
             }
 
-            impl Add for [<$curve_name _G1Projective>] {
+            impl Add for [<$curve_name Projective>] {
                 type Output = Self;
 
                 fn add(self, rhs: Self) -> Self::Output {
-                    let lhs = <$G1Projective>::try_from(self).unwrap();
-                    let rhs = <$G1Projective>::try_from(rhs).unwrap();
-                    <[<$curve_name _G1Projective>]>::try_from(lhs.add(rhs)).unwrap()
+                    let lhs = <$Projective>::try_from(self).unwrap();
+                    let rhs = <$Projective>::try_from(rhs).unwrap();
+                    <[<$curve_name Projective>]>::try_from(lhs.add(rhs)).unwrap()
                 }
             }
 
-            impl Zero for [<$curve_name _G1Projective>] {
+            impl Zero for [<$curve_name Projective>] {
                 fn zero() -> Self {
-                    <[<$curve_name _G1Projective>]>::try_from(<$G1Projective>::zero()).unwrap()
+                    <[<$curve_name Projective>]>::try_from(<$Projective>::zero()).unwrap()
                 }
 
                 fn is_zero(&self) -> bool {
-                    <$G1Projective>::is_zero(&<$G1Projective>::from(self))
+                    <$Projective>::is_zero(&<$Projective>::from(self))
                 }
             }
 
-            impl TryFrom<$G1Projective> for [<$curve_name _G1Projective>] {
+            impl TryFrom<$Projective> for [<$curve_name Projective>] {
                 type Error = SerializationError;
 
-                fn try_from(value: $G1Projective) -> Result<Self, Self::Error> {
+                fn try_from(value: $Projective) -> Result<Self, Self::Error> {
                     let mut buf = Vec::new();
                     value.serialize_compressed(&mut buf)?;
                     let mut result = [0u8; $PROJECTIVE_SIZE];
                     result.copy_from_slice(&buf);
-                    Ok([<$curve_name _G1Projective>](result))
+                    Ok([<$curve_name Projective>](result))
                 }
             }
 
-            impl TryFrom<[<$curve_name _G1Projective>]> for $G1Projective {
+            impl TryFrom<[<$curve_name Projective>]> for $Projective {
                 type Error = SerializationError;
 
-                fn try_from(value: [<$curve_name _G1Projective>]) -> Result<Self, Self::Error> {
-                    <$G1Projective>::deserialize_compressed(value.0.as_slice())
+                fn try_from(value: [<$curve_name Projective>]) -> Result<Self, Self::Error> {
+                    <$Projective>::deserialize_compressed(value.0.as_slice())
                 }
             }
 
-            impl From<&[<$curve_name _G1Projective>]> for $G1Projective {
-                fn from(value: &[<$curve_name _G1Projective>]) -> Self {
-                    <$G1Projective>::deserialize_compressed(value.0.as_slice()).unwrap()
+            impl From<&[<$curve_name Projective>]> for $Projective {
+                fn from(value: &[<$curve_name Projective>]) -> Self {
+                    <$Projective>::deserialize_compressed(value.0.as_slice()).unwrap()
                 }
             }
 
-            impl [<$curve_name _KeyPair>] {
+            impl [<$curve_name KeyPair>] {
                 pub fn zero() -> Self {
-                    [<$curve_name _KeyPair>] {
-                        private_key: [<$curve_name _Fr>]::zero(),
-                        public_key: [<$curve_name _G1Projective>]::zero(),
+                    [<$curve_name KeyPair>] {
+                        private_key: [<$curve_name Fr>]::zero(),
+                        public_key: [<$curve_name Projective>]::zero(),
                     }
                 }
             }
 
-            impl [<$curve_name _StealthAddress>] {
+            impl [<$curve_name StealthAddress>] {
                 pub fn zero() -> Self {
-                    [<$curve_name _StealthAddress>] {
-                        stealth_address: [<$curve_name _G1Projective>]::zero(),
+                    [<$curve_name StealthAddress>] {
+                        stealth_address: [<$curve_name Projective>]::zero(),
                         view_tag: 0,
                     }
                 }
             }
 
-            impl TryFrom<($G1Projective, u64)> for [<$curve_name _StealthAddress>] {
+            impl TryFrom<($Projective, u64)> for [<$curve_name StealthAddress>] {
                 type Error = SerializationError;
 
-                fn try_from(value: ($G1Projective, u64)) -> Result<Self, Self::Error> {
-                    Ok([<$curve_name _StealthAddress>] {
-                        stealth_address: <[<$curve_name _G1Projective>]>::try_from(value.0)?,
+                fn try_from(value: ($Projective, u64)) -> Result<Self, Self::Error> {
+                    Ok([<$curve_name StealthAddress>] {
+                        stealth_address: <[<$curve_name Projective>]>::try_from(value.0)?,
                         view_tag: value.1,
                     })
                 }
             }
 
-            impl TryInto<($G1Projective, u64)> for [<$curve_name _StealthAddress>] {
+            impl TryInto<($Projective, u64)> for [<$curve_name StealthAddress>] {
                 type Error = SerializationError;
-                fn try_into(self) -> Result<($G1Projective, u64), Self::Error> {
+                fn try_into(self) -> Result<($Projective, u64), Self::Error> {
                     Ok((self.stealth_address.try_into()?, self.view_tag))
                 }
             }
             #[no_mangle]
-            pub extern "C" fn [<$curve_name _ffi_generate_random_fr>]() -> *mut CReturn<[<$curve_name _Fr>]> {
-                let res = match [<$curve_name _Fr>]::try_from(<$Curve>::generate_random_fr()) {
+            pub extern "C" fn [<$curve_name _ffi_generate_random_fr>]() -> *mut CReturn<[<$curve_name Fr>]> {
+                let res = match [<$curve_name Fr>]::try_from(<$Curve>::generate_random_fr()) {
                     Ok(v) => CReturn {
                         value: v,
                         err_code: CErrorCode::NoError,
                     },
                     Err(err) => CReturn {
-                        value: [<$curve_name _Fr>]::zero(),
+                        value: [<$curve_name Fr>]::zero(),
                         err_code: err.into(),
                     },
                 };
@@ -200,7 +200,7 @@ macro_rules! define_curve_ffi {
             }
 
             #[no_mangle]
-            pub extern "C" fn [<drop_ $curve_name _ffi_generate_random_fr>](ptr: *mut CReturn<[<$curve_name _Fr>]>) {
+            pub extern "C" fn [<drop_ $curve_name _ffi_generate_random_fr>](ptr: *mut CReturn<[<$curve_name Fr>]>) {
                 if ptr.is_null() {
                     return;
                 }
@@ -210,11 +210,11 @@ macro_rules! define_curve_ffi {
             }
 
             #[no_mangle]
-            pub extern "C" fn [<$curve_name _ffi_derive_public_key>](private_key: *mut [<$curve_name _Fr>]) -> *mut CReturn<[<$curve_name _G1Projective>]> {
+            pub extern "C" fn [<$curve_name _ffi_derive_public_key>](private_key: *mut [<$curve_name Fr>]) -> *mut CReturn<[<$curve_name Projective>]> {
                 let private_key = unsafe {
                     if private_key.is_null() {
                         return Box::into_raw(Box::new(CReturn {
-                            value: [<$curve_name _G1Projective>]::zero(),
+                            value: [<$curve_name Projective>]::zero(),
                             err_code: CErrorCode::InvalidKeys,
                         }));
                     }
@@ -224,19 +224,19 @@ macro_rules! define_curve_ffi {
                     Ok(v) => v,
                     Err(_) => {
                         return Box::into_raw(Box::new(CReturn {
-                            value: [<$curve_name _G1Projective>]::zero(),
+                            value: [<$curve_name Projective>]::zero(),
                             err_code: CErrorCode::InvalidKeys,
                         }))
                     }
                 };
 
-                let res = match [<$curve_name _G1Projective>]::try_from(<$Curve>::derive_public_key(&private_key)) {
+                let res = match [<$curve_name Projective>]::try_from(<$Curve>::derive_public_key(&private_key)) {
                     Ok(v) => CReturn {
                         value: v,
                         err_code: CErrorCode::NoError,
                     },
                     Err(err) => CReturn {
-                        value: [<$curve_name _G1Projective>]::zero(),
+                        value: [<$curve_name Projective>]::zero(),
                         err_code: err.into(),
                     },
                 };
@@ -244,7 +244,7 @@ macro_rules! define_curve_ffi {
             }
 
             #[no_mangle]
-            pub extern "C" fn [<drop_ $curve_name _ffi_derive_public_key>](ptr: *mut CReturn<[<$curve_name _G1Projective>]>) {
+            pub extern "C" fn [<drop_ $curve_name _ffi_derive_public_key>](ptr: *mut CReturn<[<$curve_name Projective>]>) {
                 if ptr.is_null() {
                     return;
                 }
@@ -254,28 +254,28 @@ macro_rules! define_curve_ffi {
             }
 
             #[no_mangle]
-            pub extern "C" fn [<$curve_name _ffi_random_keypair>]() -> *mut CReturn<[<$curve_name _KeyPair>]> {
+            pub extern "C" fn [<$curve_name _ffi_random_keypair>]() -> *mut CReturn<[<$curve_name KeyPair>]> {
                 let (private_key, public_key) = <$Curve>::random_keypair();
-                let private_key = match [<$curve_name _Fr>]::try_from(private_key) {
+                let private_key = match [<$curve_name Fr>]::try_from(private_key) {
                     Ok(v) => v,
                     Err(err) => {
                         return Box::into_raw(Box::new(CReturn {
-                            value: [<$curve_name _KeyPair>]::zero(),
+                            value: [<$curve_name KeyPair>]::zero(),
                             err_code: err.into(),
                         }))
                     }
                 };
-                let public_key = match [<$curve_name _G1Projective>]::try_from(public_key) {
+                let public_key = match [<$curve_name Projective>]::try_from(public_key) {
                     Ok(v) => v,
                     Err(err) => {
                         return Box::into_raw(Box::new(CReturn {
-                            value: [<$curve_name _KeyPair>]::zero(),
+                            value: [<$curve_name KeyPair>]::zero(),
                             err_code: err.into(),
                         }))
                     }
                 };
                 let res = CReturn {
-                    value: [<$curve_name _KeyPair>] {
+                    value: [<$curve_name KeyPair>] {
                         private_key,
                         public_key,
                     },
@@ -285,7 +285,7 @@ macro_rules! define_curve_ffi {
             }
 
             #[no_mangle]
-            pub extern "C" fn [<drop_ $curve_name _ffi_random_keypair>](ptr: *mut CReturn<[<$curve_name _KeyPair>]>) {
+            pub extern "C" fn [<drop_ $curve_name _ffi_random_keypair>](ptr: *mut CReturn<[<$curve_name KeyPair>]>) {
                 if ptr.is_null() {
                     return;
                 }
@@ -296,14 +296,14 @@ macro_rules! define_curve_ffi {
 
             #[no_mangle]
             pub extern "C" fn [<$curve_name _ffi_generate_stealth_address>](
-                viewing_public_key: *mut [<$curve_name _G1Projective>],
-                spending_public_key: *mut [<$curve_name _G1Projective>],
-                ephemeral_private_key: *mut [<$curve_name _Fr>],
-            ) -> *mut CReturn<[<$curve_name _StealthAddress>]> {
+                viewing_public_key: *mut [<$curve_name Projective>],
+                spending_public_key: *mut [<$curve_name Projective>],
+                ephemeral_private_key: *mut [<$curve_name Fr>],
+            ) -> *mut CReturn<[<$curve_name StealthAddress>]> {
                 let viewing_public_key = unsafe {
                     if viewing_public_key.is_null() {
                         return Box::into_raw(Box::new(CReturn {
-                            value: [<$curve_name _StealthAddress>]::zero(),
+                            value: [<$curve_name StealthAddress>]::zero(),
                             err_code: CErrorCode::InvalidKeys,
                         }));
                     }
@@ -312,7 +312,7 @@ macro_rules! define_curve_ffi {
                 let spending_public_key = unsafe {
                     if spending_public_key.is_null() {
                         return Box::into_raw(Box::new(CReturn {
-                            value: [<$curve_name _StealthAddress>]::zero(),
+                            value: [<$curve_name StealthAddress>]::zero(),
                             err_code: CErrorCode::InvalidKeys,
                         }));
                     }
@@ -321,27 +321,27 @@ macro_rules! define_curve_ffi {
                 let ephemeral_private_key = unsafe {
                     if ephemeral_private_key.is_null() {
                         return Box::into_raw(Box::new(CReturn {
-                            value: [<$curve_name _StealthAddress>]::zero(),
+                            value: [<$curve_name StealthAddress>]::zero(),
                             err_code: CErrorCode::InvalidKeys,
                         }));
                     }
                     &*ephemeral_private_key
                 };
 
-                let viewing_public_key: $G1Projective = match viewing_public_key.try_into() {
+                let viewing_public_key: $Projective = match viewing_public_key.try_into() {
                     Ok(v) => v,
                     Err(_) => {
                         return Box::into_raw(Box::new(CReturn {
-                            value: [<$curve_name _StealthAddress>]::zero(),
+                            value: [<$curve_name StealthAddress>]::zero(),
                             err_code: CErrorCode::InvalidKeys,
                         }))
                     }
                 };
-                let spending_public_key: $G1Projective = match spending_public_key.try_into() {
+                let spending_public_key: $Projective = match spending_public_key.try_into() {
                     Ok(v) => v,
                     Err(_) => {
                         return Box::into_raw(Box::new(CReturn {
-                            value: [<$curve_name _StealthAddress>]::zero(),
+                            value: [<$curve_name StealthAddress>]::zero(),
                             err_code: CErrorCode::InvalidKeys,
                         }))
                     }
@@ -350,12 +350,12 @@ macro_rules! define_curve_ffi {
                     Ok(v) => v,
                     Err(_) => {
                         return Box::into_raw(Box::new(CReturn {
-                            value: [<$curve_name _StealthAddress>]::zero(),
+                            value: [<$curve_name StealthAddress>]::zero(),
                             err_code: CErrorCode::InvalidKeys,
                         }))
                     }
                 };
-                let res = match [<$curve_name _StealthAddress>]::try_from(<$Curve>::generate_stealth_address(
+                let res = match [<$curve_name StealthAddress>]::try_from(<$Curve>::generate_stealth_address(
                     viewing_public_key,
                     spending_public_key,
                     ephemeral_private_key,
@@ -366,7 +366,7 @@ macro_rules! define_curve_ffi {
                     },
                     Err(err) => {
                         return Box::into_raw(Box::new(CReturn {
-                            value: [<$curve_name _StealthAddress>]::zero(),
+                            value: [<$curve_name StealthAddress>]::zero(),
                             err_code: err.into(),
                         }))
                     }
@@ -375,7 +375,7 @@ macro_rules! define_curve_ffi {
             }
 
             #[no_mangle]
-            pub extern "C" fn [<drop_ $curve_name _ffi_generate_stealth_address>](ptr: *mut CReturn<[<$curve_name _StealthAddress>]>) {
+            pub extern "C" fn [<drop_ $curve_name _ffi_generate_stealth_address>](ptr: *mut CReturn<[<$curve_name StealthAddress>]>) {
                 if ptr.is_null() {
                     return;
                 }
@@ -386,15 +386,15 @@ macro_rules! define_curve_ffi {
 
             #[no_mangle]
             pub extern "C" fn [<$curve_name _ffi_generate_stealth_private_key>](
-                ephemeral_public_key: *mut [<$curve_name _G1Projective>],
-                spending_key: *mut [<$curve_name _Fr>],
-                    viewing_key: *mut [<$curve_name _Fr>],
+                ephemeral_public_key: *mut [<$curve_name Projective>],
+                spending_key: *mut [<$curve_name Fr>],
+                    viewing_key: *mut [<$curve_name Fr>],
                 view_tag: *mut u64,
-            ) -> *mut CReturn<[<$curve_name _Fr>]> {
+            ) -> *mut CReturn<[<$curve_name Fr>]> {
                 let ephemeral_public_key = unsafe {
                     if ephemeral_public_key.is_null() {
                         return Box::into_raw(Box::new(CReturn {
-                            value: [<$curve_name _Fr>]::zero(),
+                            value: [<$curve_name Fr>]::zero(),
                             err_code: CErrorCode::InvalidKeys,
                         }));
                     }
@@ -403,7 +403,7 @@ macro_rules! define_curve_ffi {
                 let spending_key = unsafe {
                     if spending_key.is_null() {
                         return Box::into_raw(Box::new(CReturn {
-                            value: [<$curve_name _Fr>]::zero(),
+                            value: [<$curve_name Fr>]::zero(),
                             err_code: CErrorCode::InvalidKeys,
                         }));
                     }
@@ -412,7 +412,7 @@ macro_rules! define_curve_ffi {
                 let viewing_key = unsafe {
                     if viewing_key.is_null() {
                         return Box::into_raw(Box::new(CReturn {
-                            value: [<$curve_name _Fr>]::zero(),
+                            value: [<$curve_name Fr>]::zero(),
                             err_code: CErrorCode::InvalidKeys,
                         }));
                     }
@@ -421,18 +421,18 @@ macro_rules! define_curve_ffi {
                 let view_tag = unsafe {
                     if view_tag.is_null() {
                         return Box::into_raw(Box::new(CReturn {
-                            value: [<$curve_name _Fr>]::zero(),
+                            value: [<$curve_name Fr>]::zero(),
                             err_code: CErrorCode::InvalidKeys,
                         }));
                     }
                     &*view_tag
                 };
 
-                let ephemeral_public_key: $G1Projective = match ephemeral_public_key.try_into() {
+                let ephemeral_public_key: $Projective = match ephemeral_public_key.try_into() {
                     Ok(v) => v,
                     Err(_) => {
                         return Box::into_raw(Box::new(CReturn {
-                            value: [<$curve_name _Fr>]::zero(),
+                            value: [<$curve_name Fr>]::zero(),
                             err_code: CErrorCode::InvalidKeys,
                         }))
                     }
@@ -441,7 +441,7 @@ macro_rules! define_curve_ffi {
                     Ok(v) => v,
                     Err(_) => {
                         return Box::into_raw(Box::new(CReturn {
-                            value: [<$curve_name _Fr>]::zero(),
+                            value: [<$curve_name Fr>]::zero(),
                             err_code: CErrorCode::InvalidKeys,
                         }))
                     }
@@ -450,13 +450,13 @@ macro_rules! define_curve_ffi {
                     Ok(v) => v,
                     Err(_) => {
                         return Box::into_raw(Box::new(CReturn {
-                            value: [<$curve_name _Fr>]::zero(),
+                            value: [<$curve_name Fr>]::zero(),
                             err_code: CErrorCode::InvalidKeys,
                         }))
                     }
                 };
 
-                let res = match [<$curve_name _Fr>]::try_from(<$Curve>::generate_stealth_private_key(
+                let res = match [<$curve_name Fr>]::try_from(<$Curve>::generate_stealth_private_key(
                     ephemeral_public_key,
                     spending_key,
                     viewing_key,
@@ -467,7 +467,7 @@ macro_rules! define_curve_ffi {
                         err_code: CErrorCode::NoError,
                     },
                     Err(err) => CReturn {
-                        value: [<$curve_name _Fr>]::zero(),
+                        value: [<$curve_name Fr>]::zero(),
                         err_code: err.into(),
                     },
                 };
@@ -475,7 +475,7 @@ macro_rules! define_curve_ffi {
             }
 
             #[no_mangle]
-            pub extern "C" fn [<drop_ $curve_name _ffi_generate_stealth_private_key>](ptr: *mut CReturn<[<$curve_name _Fr>]>) {
+            pub extern "C" fn [<drop_ $curve_name _ffi_generate_stealth_private_key>](ptr: *mut CReturn<[<$curve_name Fr>]>) {
                 if ptr.is_null() {
                     return;
                 }
@@ -503,7 +503,7 @@ macro_rules! define_curve_ffi {
 
                     // Extract private and public keys
                     let private_key = $Fr::try_from(&keypair.value.private_key).unwrap();
-                    let public_key = $G1Projective::try_from(&keypair.value.public_key).unwrap();
+                    let public_key = $Projective::try_from(&keypair.value.public_key).unwrap();
 
                     // Drop the keypair to avoid memory leaks
                     [<drop_ $curve_name _ffi_random_keypair>](keypair_raw);
