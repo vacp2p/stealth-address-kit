@@ -34,6 +34,9 @@ mod vesta_impl;
 #[cfg(feature = "ffi")]
 #[cfg_attr(docsrs, doc(cfg(feature = "ffi")))]
 mod ffi;
+#[cfg(feature = "ffi")]
+#[cfg_attr(docsrs, doc(cfg(feature = "ffi")))]
+mod ffi_prelude;
 
 #[cfg(feature = "baby_jub_jub")]
 #[cfg_attr(docsrs, doc(cfg(feature = "baby_jub_jub")))]
