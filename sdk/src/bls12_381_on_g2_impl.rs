@@ -10,3 +10,4 @@ impl StealthAddressOnCurve for Bls12_381_G2 {
 
 // define the tests for the curve
 define_curve_tests!(Bls12_381_G2);
+// run the tests with `cargo test -p stealth_address_kit --no-default-features --features bls12_381 bls12_381_on_g2_impl`
