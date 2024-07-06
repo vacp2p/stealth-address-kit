@@ -12,6 +12,8 @@ mod bls12_377_impl;
 #[cfg(feature = "bls12_381")]
 #[cfg_attr(docsrs, doc(cfg(feature = "bls12_381")))]
 mod bls12_381_impl;
+#[cfg_attr(docsrs, doc(cfg(feature = "bls12_381")))]
+mod bls12_381_on_g2_impl;
 #[cfg(feature = "bn254")]
 #[cfg_attr(docsrs, doc(cfg(feature = "bn254")))]
 mod bn254_impl;
