@@ -11,3 +11,8 @@ impl StealthAddressOnCurve for Bls12_381_G2 {
 // define the tests for the curve
 define_curve_tests!(Bls12_381_G2);
 // run the tests with `cargo test -p stealth_address_kit --no-default-features --features bls12_381 bls12_381_on_g2_impl`
+#[cfg(feature = "ffi")]
+use {crate::define_curve_ffi, ark_bls12_381::Fr};
+// run the tests with `cargo test -p stealth_address_kit --no-default-features --features bls12_381,ffi bls12_381_on_g2_impl`
+#[cfg(feature = "ffi")]
+define_curve_ffi!(bls12_381_on_g2, Bls12_381_G2, Fr, G2Projective, 32, 96);
