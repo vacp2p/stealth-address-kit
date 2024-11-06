@@ -115,6 +115,7 @@ jobs:
         with:
           name: *-archive
           path: ./sdk
+          merge-multiple: true
 
       - name: Delete tag
         uses: dev-drprasad/delete-tag-and-release@v0.2.1
