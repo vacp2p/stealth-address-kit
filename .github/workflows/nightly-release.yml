@@ -48,7 +48,7 @@ jobs:
           tar -czvf ${{ matrix.target }}-${{matrix.curve}}.tar.gz release/
 
       - name: Upload archive artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.target }}-archive
           path: ./sdk/${{ matrix.target }}-${{matrix.curve}}.tar.gz
@@ -95,7 +95,7 @@ jobs:
           tar -czvf ${{ matrix.target }}-${{ matrix.curve }}.tar.gz release/
 
       - name: Upload archive artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.target }}-archive
           path: ./sdk/${{ matrix.target }}-${{ matrix.curve }}.tar.gz
