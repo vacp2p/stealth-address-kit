@@ -113,7 +113,8 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
-          name: *-archive
+          name: |
+            *-archive
           path: ./sdk
           merge-multiple: true
 
