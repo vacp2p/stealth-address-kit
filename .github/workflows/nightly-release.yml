@@ -50,7 +50,7 @@ jobs:
       - name: Upload archive artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.target }}-archive
+          name: ${{ matrix.target }}-${{matrix.curve}}-archive
           path: ./sdk/${{ matrix.target }}-${{matrix.curve}}.tar.gz
           retention-days: 2
 
@@ -97,7 +97,7 @@ jobs:
       - name: Upload archive artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.target }}-archive
+          name: ${{ matrix.target }}-${{matrix.curve}}-archive
           path: ./sdk/${{ matrix.target }}-${{ matrix.curve }}.tar.gz
           retention-days: 2
   merge:
