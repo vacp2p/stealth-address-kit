@@ -115,7 +115,6 @@ jobs:
         with:
           pattern: |
             *-archive
-          path: ./sdk
           merge-multiple: true
 
       - name: Delete tag
