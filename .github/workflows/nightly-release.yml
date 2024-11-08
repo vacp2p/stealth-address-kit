@@ -113,6 +113,9 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
+          pattern: |
+            *-archive
+          path: ./sdk
           merge-multiple: true
 
       - name: Delete tag
@@ -125,11 +128,12 @@ jobs:
 
       - name: Create prerelease
         run: |
+          ls -R ./sdk
           gh release create nightly --prerelease --target master \
             --title 'Nightly build ("master" branch)' \
             --generate-notes \
             --draft=false \
-            *-archive/*.tar.gz \
+            sdk/*-archive/*.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.PERSONAL_TOKEN }}
 
