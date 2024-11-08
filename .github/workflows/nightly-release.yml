@@ -115,7 +115,7 @@ jobs:
         with:
           pattern: |
             *-archive
-          path: ./sdk
+          path: ./libs
           merge-multiple: true
 
       - name: Delete tag
@@ -128,12 +128,12 @@ jobs:
 
       - name: Create prerelease
         run: |
-          ls -R ./sdk
+          ls -Rlah ./libs
           gh release create nightly --prerelease --target master \
             --title 'Nightly build ("master" branch)' \
             --generate-notes \
             --draft=false \
-            sdk/*-archive/*.tar.gz
+            ./libs/*.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.PERSONAL_TOKEN }}
 
