@@ -28,7 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Install stable toolchain
         uses: actions-rs/toolchain@v1
         with:
@@ -48,9 +48,9 @@ jobs:
           tar -czvf ${{ matrix.target }}-${{matrix.curve}}.tar.gz release/
 
       - name: Upload archive artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.target }}-archive
+          name: ${{ matrix.target }}-${{ matrix.curve }}-archive
           path: ./sdk/${{ matrix.target }}-${{matrix.curve}}.tar.gz
           retention-days: 2
 
@@ -75,7 +75,7 @@ jobs:
           - aarch64-apple-darwin
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Install stable toolchain
         uses: actions-rs/toolchain@v1
         with:
@@ -95,23 +95,28 @@ jobs:
           tar -czvf ${{ matrix.target }}-${{ matrix.curve }}.tar.gz release/
 
       - name: Upload archive artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.target }}-archive
+          name: ${{ matrix.target }}-${{ matrix.curve }}-archive
           path: ./sdk/${{ matrix.target }}-${{ matrix.curve }}.tar.gz
           retention-days: 2
-
+ 
   prepare-prerelease:
     name: Prepare pre-release
     needs: [linux, macos]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: master
       - name: Download artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
+        with:
+          pattern: |
+            *-archive
+          path: ./libs
+          merge-multiple: true
 
       - name: Delete tag
         uses: dev-drprasad/delete-tag-and-release@v0.2.1
@@ -123,11 +128,12 @@ jobs:
 
       - name: Create prerelease
         run: |
+          ls -Rlah ./libs
           gh release create nightly --prerelease --target master \
             --title 'Nightly build ("master" branch)' \
             --generate-notes \
             --draft=false \
-            *-archive/*.tar.gz \
+            ./libs/*.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.PERSONAL_TOKEN }}
 
