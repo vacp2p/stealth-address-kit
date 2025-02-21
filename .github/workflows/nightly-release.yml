@@ -119,12 +119,9 @@ jobs:
           merge-multiple: true
 
       - name: Delete tag
-        uses: dev-drprasad/delete-tag-and-release@v0.2.1
-        with:
-          delete_release: true
-          tag_name: nightly
+        run: gh release delete nightly --cleanup-tag
         env:
-          GITHUB_TOKEN: ${{ secrets.PERSONAL_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create prerelease
         run: |
@@ -135,7 +132,7 @@ jobs:
             --draft=false \
             ./libs/*.tar.gz
         env:
-          GITHUB_TOKEN: ${{ secrets.PERSONAL_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Delete artifacts
         uses: geekyeggo/delete-artifact@v1
